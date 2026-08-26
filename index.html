@@ -83,6 +83,8 @@
     display: flex; justify-content: space-between; align-items: center;
   }
   .acct-option:active, .acct-option:hover { background: #1a1d26; }
+  .acct-option span:first-child { white-space: nowrap; }
+  .acct-option span:last-child { text-align: right; margin-left: 12px; }
 
   .heading {
     text-align: center; background: var(--panel); border: 1px solid var(--border);
@@ -254,8 +256,8 @@
         </button>
       </div>
       <div class="acct-dropdown" id="acctDropdown">
-        <button class="acct-option" onclick="chooseAccount('demo')">🎮 Demo <span id="ddDemoBal">10000.00 USD</span></button>
-        <button class="acct-option" onclick="chooseAccount('real')">🇺🇸 Real <span id="ddRealBal">— USD</span></button>
+        <button class="acct-option" onclick="chooseAccount('demo')"><span>🎮 Demo</span><span id="ddDemoBal">10000.00 USD</span></button>
+        <button class="acct-option" onclick="chooseAccount('real')"><span>🇺🇸 Real</span><span id="ddRealBal">— USD</span></button>
       </div>
     </div>
   </div>
