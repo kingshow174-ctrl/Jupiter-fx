@@ -1050,7 +1050,12 @@
 
   let staleWatchdog = null;
   let pingInterval = null;
-  const STALE_TIMEOUT_MS = 10000; // reconnect if no tick for 10s
+  const STALE_TIMEOUT_MS = 10000;
+
+  // 2026 Deriv API — public market data needs no app_id at all
+  const DERIV_PUBLIC_WS = "wss://api.derivws.com/trading/v1/options/ws/public";
+  const DERIV_REST_BASE = "https://api.derivws.com/trading/v1/options";
+  const DERIV_APP_ID_HEADER = "34dOXKmoe0wMGmp2uin91"; // your registered OAuth client_id, used as Deriv-App-ID
 
   function armStaleWatchdog() {
     clearTimeout(staleWatchdog);
@@ -1073,14 +1078,13 @@
   function connectDerivSocket() {
     setWsStatus("🔌 Connecting to Deriv…", "#9aa0aa");
 
-    derivSocket = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=" + DERIV_APP_ID);
+    derivSocket = new WebSocket(DERIV_PUBLIC_WS);
 
     derivSocket.onopen = () => {
       setWsStatus("✅ Socket open — requesting ticks…", "#2ecc71");
       subscribeToTicks(currentSymbol);
       armStaleWatchdog();
 
-      // Keep the connection alive — some mobile networks silently drop idle sockets
       clearInterval(pingInterval);
       pingInterval = setInterval(() => {
         if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
@@ -1094,7 +1098,7 @@
       console.log("WS message:", data.msg_type, data);
 
       if (data.msg_type === "tick" && data.tick) {
-        armStaleWatchdog(); // reset the clock — we just heard from the server
+        armStaleWatchdog();
         const quote = data.tick.quote;
         const quoteStr = quote.toString();
         const lastDigit = parseInt(quoteStr.slice(-1), 10);
@@ -1107,16 +1111,9 @@
         renderBars();
       }
 
-      if (data.msg_type === "balance" && data.balance) {
-        const bal = data.balance.balance;
-        const cur = data.balance.currency;
-        const balEl = document.getElementById("runBalance");
-        if (balEl) balEl.textContent = bal.toFixed(2) + " " + cur;
-      }
-
       if (data.error) {
-        console.warn("Deriv API error:", data.error.message);
-        setWsStatus("⚠️ " + data.error.message, "#e8544f");
+        console.warn("Deriv API error:", data.error.message || data.error);
+        setWsStatus("⚠️ " + (data.error.message || "API error"), "#e8544f");
       }
     };
 
@@ -1135,15 +1132,85 @@
     };
   }
 
-  // Account switcher — placeholder until authenticated balance calls work
+  // ---------------- AUTHENTICATED SOCKET (real/demo balance) ----------------
+  // 2026 flow: GET accounts -> pick accountId -> POST otp -> connect using returned URL
+  let authSocket = null;
+
+  async function connectAuthenticatedAccount(accountType) {
+    const token = localStorage.getItem("deriv_access_token");
+    if (!token) {
+      console.warn("No access token — user must log in first.");
+      return;
+    }
+    try {
+      const accountsRes = await fetch(DERIV_REST_BASE + "/accounts", {
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Deriv-App-ID": DERIV_APP_ID_HEADER
+        }
+      });
+      const accountsData = await accountsRes.json();
+      const accounts = accountsData.data || accountsData;
+      if (!accounts || !accounts.length) {
+        console.warn("No accounts returned:", accountsData);
+        return;
+      }
+
+      // pick the first real or demo account matching the requested type
+      const match = accounts.find(a =>
+        (accountType === "demo" ? a.is_virtual || a.type === "demo" : !a.is_virtual)
+      ) || accounts[0];
+
+      const otpRes = await fetch(DERIV_REST_BASE + "/accounts/" + match.account_id + "/otp", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Deriv-App-ID": DERIV_APP_ID_HEADER
+        }
+      });
+      const otpData = await otpRes.json();
+      const wsUrl = otpData.data && otpData.data.url;
+      if (!wsUrl) {
+        console.warn("No OTP url returned:", otpData);
+        return;
+      }
+
+      if (authSocket) { try { authSocket.close(); } catch (e) {} }
+      authSocket = new WebSocket(wsUrl);
+
+      authSocket.onopen = () => {
+        authSocket.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+      };
+      authSocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Auth WS message:", data.msg_type, data);
+        if (data.msg_type === "balance" && data.balance) {
+          const bal = data.balance.balance;
+          const cur = data.balance.currency;
+          const targetId = accountType === "demo" ? "acctDemoBalance" : "acctRealBalance";
+          const el = document.getElementById(targetId);
+          if (el) el.textContent = bal.toFixed(2) + " " + cur;
+        }
+      };
+      authSocket.onerror = (e) => console.error("Auth WS error:", e);
+    } catch (e) {
+      console.error("Error connecting authenticated account:", e);
+    }
+  }
+
+    // Account switcher — placeholder until authenticated balance calls work
   let activeAccount = "real";
   function switchAccount(type) {
     activeAccount = type;
     document.getElementById("acctRealBtn").classList.toggle("active", type === "real");
     document.getElementById("acctDemoBtn").classList.toggle("active", type === "demo");
     console.log("Switched to account type:", type);
-    // Real balance requires authenticated API token calls — wired in once
-    // Deriv's OAuth2 tokens are confirmed compatible with the WS "authorize" call.
+    connectAuthenticatedAccount(type);
+  }
+
+  // Try connecting authenticated balance on load if already logged in
+  if (localStorage.getItem("deriv_access_token")) {
+    connectAuthenticatedAccount("real");
   }
 
   function subscribeToTicks(symbol) {
