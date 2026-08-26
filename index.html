@@ -191,9 +191,15 @@
     padding: 10px 12px; color: var(--text); font-size: 14px; font-weight: 600;
   }
   .trade-buy-row { display: flex; gap: 10px; margin-top: 6px; }
-  .trade-buy-btn { flex: 1; padding: 14px; border-radius: 10px; border: none; font-weight: 800; font-size: 14px; cursor: pointer; }
-  .buy-over { background: var(--green); color: #0d0f14; }
-  .buy-under { background: var(--red); color: #fff; }
+  .trade-buy-btn {
+    flex: 1; padding: 12px 10px; border-radius: 14px; border: none; cursor: pointer;
+    text-align: left; color: #fff;
+  }
+  .trade-buy-btn .tb-label { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13px; margin-bottom: 6px; }
+  .trade-buy-btn .tb-payout-label { font-size: 10px; opacity: 0.85; }
+  .trade-buy-btn .tb-payout-value { font-weight: 800; font-size: 13px; }
+  .buy-over { background: #17a672; }
+  .buy-under { background: #c23a4a; }
   .trade-feedback { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 16px; }
 
   /* ---- Run/history page ---- */
@@ -347,9 +353,18 @@
     <div class="trade-sheet-title">Manual Trade <button class="trade-close" onclick="closeTradeSheet()">✕</button></div>
     <div class="trade-field"><label>Stake (USD)</label><input type="number" id="manualStake" value="1" min="0.35" step="0.01"></div>
     <div class="trade-field"><label>Duration (ticks)</label><input type="number" id="manualDuration" value="5" min="1" step="1"></div>
+    <script>document.addEventListener("input", function(e){ if(e.target && e.target.id==="manualStake"){ var s=parseFloat(e.target.value)||0; var p=(s*1.9).toFixed(2); var a=document.getElementById("payoutOverPreview"); var b=document.getElementById("payoutUnderPreview"); if(a) a.textContent=p+" USD"; if(b) b.textContent=p+" USD"; } });</script>
     <div class="trade-buy-row">
-      <button class="trade-buy-btn buy-over" onclick="placeManualTrade('over')">Buy Over</button>
-      <button class="trade-buy-btn buy-under" onclick="placeManualTrade('under')">Buy Under</button>
+      <button class="trade-buy-btn buy-over" onclick="placeManualTrade('over')">
+        <div class="tb-label">⚡ Over</div>
+        <div class="tb-payout-label">Payout</div>
+        <div class="tb-payout-value" id="payoutOverPreview">0.00 USD</div>
+      </button>
+      <button class="trade-buy-btn buy-under" onclick="placeManualTrade('under')">
+        <div class="tb-label">⚡ Under</div>
+        <div class="tb-payout-label">Payout</div>
+        <div class="tb-payout-value" id="payoutUnderPreview">0.00 USD</div>
+      </button>
     </div>
     <div class="trade-feedback" id="tradeFeedback"></div>
   </div>
@@ -358,7 +373,7 @@
 <div class="runbar-wrap" id="mainRunbar">
   <div class="runbar-inner">
     <div class="disclaimer-row">
-      <button class="caret-btn" id="showHistoryBtn" onclick="showHistoryView()">▲</button>
+      <button class="caret-btn" id="showHistoryBtn" style="display:flex;" onclick="showHistoryView()">▲</button>
       <span></span>
       <button class="disclaimer-btn">Risk Disclaimer</button>
     </div>
@@ -672,7 +687,12 @@ try {
       const accountsData = await accountsRes.json();
       const accounts = accountsData.data || accountsData;
       if (!accounts || !accounts.length) return;
-      const match = accounts.find(a => (accountType === "demo" ? a.is_virtual || a.type === "demo" : !a.is_virtual)) || accounts[0];
+      const match = accounts.find(a => (accountType === "demo" ? (a.is_virtual || a.type === "demo") : (!a.is_virtual && a.type !== "demo")));
+      if (!match) {
+        const targetId = accountType === "demo" ? "ddDemoBal" : "ddRealBal";
+        document.getElementById(targetId).textContent = "No " + accountType + " account found";
+        return;
+      }
       const otpRes = await fetch(DERIV_REST_BASE + "/accounts/" + match.account_id + "/otp", {
         method: "POST", headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
       });
@@ -694,7 +714,10 @@ try {
       };
     } catch (e) { console.warn("Auth account error:", e); }
   }
-  if (localStorage.getItem("deriv_access_token")) connectAuthenticatedAccount("demo");
+  if (localStorage.getItem("deriv_access_token")) {
+    connectAuthenticatedAccount("demo");
+    connectAuthenticatedAccount("real");
+  }
 
   // ---------------- MANUAL TRADE OVERLAY ----------------
   function openTradeSheet() { document.getElementById("tradeOverlay").classList.add("open"); }
@@ -704,16 +727,32 @@ try {
     const fb = document.getElementById("tradeFeedback");
     const entry = latestRealPrice !== null ? latestRealPrice : basePrice;
     fb.textContent = "Placing " + direction.toUpperCase() + " trade at " + entry.toFixed(4) + "…";
-    // NOTE: placeholder — real contract purchase needs Deriv's authenticated
-    // "buy" WebSocket call once the OTP-authenticated socket is confirmed working.
+    // NOTE: still a local simulation of outcome/balance — real money movement
+    // needs Deriv's authenticated "buy" WebSocket call, not yet wired in.
     setTimeout(() => {
       const digit = latestRealDigit !== null ? latestRealDigit : randomDigit();
       const won = direction === "over" ? digit > prediction : digit < prediction;
       const exit = latestRealPrice !== null ? latestRealPrice : basePrice;
+      const payout = won ? stake * PAYOUT_RATIO : 0;
+
+      totalStake += stake; totalPayout += payout; runsCount += 1;
+      if (won) { contractsWon++; balance += (payout - stake); } else { contractsLost++; balance -= stake; }
+
       pushTradeRow(entry, exit, stake, won);
       updateStats();
+      updateAccountBalanceDisplay();
+
       fb.textContent = won ? "✅ Won! Exit " + exit.toFixed(4) : "❌ Lost. Exit " + exit.toFixed(4);
     }, 1500);
+  }
+
+  // Reflects the locally-tracked balance onto whichever account pill is active
+  function updateAccountBalanceDisplay() {
+    const balStr = fmt(balance) + " USD";
+    const targetId = activeAccountType === "demo" ? "ddDemoBal" : "ddRealBal";
+    document.getElementById(targetId).textContent = balStr;
+    document.getElementById("acctBtnBalance").textContent = balStr;
+    document.getElementById("runBalance").textContent = balStr;
   }
 
   // ---------------- RUN / HISTORY SIMULATION (now uses REAL data) ----------------
@@ -774,6 +813,7 @@ try {
       if (won) { contractsWon++; balance += (payout - STAKE); } else { contractsLost++; balance -= STAKE; }
       pushTradeRow(entrySpot, exitSpot, STAKE, won);
       updateStats();
+      updateAccountBalanceDisplay();
       const outcomeText = won ? "Won" : "Lost";
       statusEls.forEach(el => el.textContent = outcomeText);
       progressEl.style.width = "100%";
@@ -807,7 +847,6 @@ try {
       document.getElementById("statusDot").className = "status-dot won";
       document.getElementById("resetBtn").classList.remove("active");
       setToggleLabel(true);
-      if (!hasStartedOnce) { hasStartedOnce = true; showHistoryView(); }
       runOneContract();
     }
   }
