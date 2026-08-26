@@ -963,8 +963,8 @@
     const stateBytes = crypto.getRandomValues(new Uint8Array(16));
     const state = Array.from(stateBytes).map(b => b.toString(16).padStart(2, "0")).join("");
 
-    sessionStorage.setItem("pkce_code_verifier", codeVerifier);
-    sessionStorage.setItem("oauth_state", state);
+    localStorage.setItem("pkce_code_verifier", codeVerifier);
+    localStorage.setItem("oauth_state", state);
 
     const authUrl = "https://auth.deriv.com/oauth2/auth"
       + "?response_type=code"
@@ -1005,7 +1005,7 @@
       setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
       subscribeToTicks(currentSymbol);
 
-      const token = sessionStorage.getItem("deriv_access_token");
+      const token = localStorage.getItem("deriv_access_token");
       if (token) {
         derivSocket.send(JSON.stringify({ authorize: token }));
       }
@@ -1076,7 +1076,7 @@
 
   // Reflect logged-in state on the button if a token already exists
   (function checkLoginState() {
-    const token = sessionStorage.getItem("deriv_access_token");
+    const token = localStorage.getItem("deriv_access_token");
     const btn = document.getElementById("derivLoginBtn");
     if (token && btn) {
       btn.textContent = "✓ Connected to Deriv";
