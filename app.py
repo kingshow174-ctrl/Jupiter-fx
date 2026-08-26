@@ -1,16 +1,17 @@
 from flask import Flask, send_from_directory
 import os
 
-app = Flask(__name__, static_folder=".", static_url_path="")
+app = Flask(__name__)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @app.route("/")
 def home():
-    return send_from_directory(".", "index.html")
+    return send_from_directory(BASE_DIR, "index.html")
 
-# Serves any other file in the folder (css, js, images, etc.)
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(".", path)
+@app.route("/<path:filename>")
+def static_files(filename):
+    return send_from_directory(BASE_DIR, filename)
 
 # ---- Future API routes go here, e.g.: ----
 # @app.route("/api/ticks")
