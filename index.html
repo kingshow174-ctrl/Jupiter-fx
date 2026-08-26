@@ -1005,10 +1005,9 @@
       setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
       subscribeToTicks(currentSymbol);
 
-      const token = localStorage.getItem("deriv_access_token");
-      if (token) {
-        derivSocket.send(JSON.stringify({ authorize: token }));
-      }
+      // NOTE: legacy WS "authorize" expects an old-style API token, not the
+      // new OAuth2 bearer token — skipping for now to avoid noisy errors.
+      // Ticks/prices below don't require authorization; they're public data.
     };
 
     derivSocket.onmessage = (event) => {
@@ -1024,14 +1023,6 @@
         if (sampleDigits.length > 500) sampleDigits.shift(); // keep memory bounded
         renderGrid();
         renderBars();
-      }
-
-      if (data.msg_type === "authorize") {
-        if (data.error) {
-          setWsStatus("⚠️ Authorize failed: " + data.error.message, "#e8544f");
-        } else {
-          derivSocket.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-        }
       }
 
       if (data.msg_type === "balance" && data.balance) {
