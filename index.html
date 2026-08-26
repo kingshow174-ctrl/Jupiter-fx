@@ -520,7 +520,7 @@
     </select>
     <div class="price-wrap">
       <span class="price-label">Price</span>
-      <div class="price-box" id="priceValue">98.4207</div>
+      <div class="price-box" id="priceValue">Connecting…</div>
     </div>
   </div>
 
@@ -530,6 +530,7 @@
     <div class="tab-btn" data-mode="matchesdiffers" onclick="switchMode('matchesdiffers')">MATCHES/DIFFERS</div>
   </div>
 
+  <div style="text-align:center; font-size:12px; color:#6b7280; margin-bottom:14px;" id="wsStatus">🔌 Connecting to Deriv…</div>
   <div class="prediction-row" id="predictionRow">
     <span class="prediction-label">Prediction</span>
     <select class="prediction-select" id="predictionSelect" onchange="onPredictionChange()">
@@ -976,6 +977,102 @@
 
     window.location.href = authUrl;
   }
+
+  // ---------------- REAL DERIV WEBSOCKET ----------------
+  const DERIV_APP_ID = "1089"; // public demo app id — swap for your own numeric app_id when you have one
+  let derivSocket = null;
+  let currentSymbol = "R_50";
+  let wsReconnectTimer = null;
+
+  function symbolFromSelect() {
+    return document.getElementById("symbolSelect").value;
+  }
+
+  function setWsStatus(text, color) {
+    const el = document.getElementById("wsStatus");
+    if (el) { el.textContent = text; el.style.color = color || "#6b7280"; }
+  }
+
+  function connectDerivSocket() {
+    if (derivSocket) {
+      try { derivSocket.close(); } catch (e) {}
+    }
+    setWsStatus("🔌 Connecting to Deriv…", "#9aa0aa");
+
+    derivSocket = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=" + DERIV_APP_ID);
+
+    derivSocket.onopen = () => {
+      setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
+      subscribeToTicks(currentSymbol);
+
+      const token = sessionStorage.getItem("deriv_access_token");
+      if (token) {
+        derivSocket.send(JSON.stringify({ authorize: token }));
+      }
+    };
+
+    derivSocket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.msg_type === "tick" && data.tick) {
+        const quote = data.tick.quote;
+        const quoteStr = quote.toString();
+        const lastDigit = parseInt(quoteStr.slice(-1), 10);
+
+        updatePrice(quote.toFixed(4));
+        sampleDigits.push(isNaN(lastDigit) ? 0 : lastDigit);
+        if (sampleDigits.length > 500) sampleDigits.shift(); // keep memory bounded
+        renderGrid();
+        renderBars();
+      }
+
+      if (data.msg_type === "authorize") {
+        if (data.error) {
+          setWsStatus("⚠️ Authorize failed: " + data.error.message, "#e8544f");
+        } else {
+          derivSocket.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+        }
+      }
+
+      if (data.msg_type === "balance" && data.balance) {
+        const bal = data.balance.balance;
+        const cur = data.balance.currency;
+        const balEl = document.getElementById("runBalance");
+        if (balEl) balEl.textContent = bal.toFixed(2) + " " + cur;
+      }
+
+      if (data.error) {
+        console.warn("Deriv API error:", data.error.message);
+      }
+    };
+
+    derivSocket.onerror = () => {
+      setWsStatus("⚠️ Connection error", "#e8544f");
+    };
+
+    derivSocket.onclose = () => {
+      setWsStatus("🔌 Disconnected — reconnecting…", "#e8544f");
+      clearTimeout(wsReconnectTimer);
+      wsReconnectTimer = setTimeout(connectDerivSocket, 3000);
+    };
+  }
+
+  function subscribeToTicks(symbol) {
+    if (!derivSocket || derivSocket.readyState !== WebSocket.OPEN) return;
+    // unsubscribe from all previous tick streams first
+    derivSocket.send(JSON.stringify({ forget_all: "ticks" }));
+    derivSocket.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));
+  }
+
+  // Hook symbol dropdown to re-subscribe on change
+  const originalOnSymbolChange = onSymbolChange;
+  onSymbolChange = function() {
+    originalOnSymbolChange();
+    currentSymbol = symbolFromSelect();
+    subscribeToTicks(currentSymbol);
+  };
+
+  connectDerivSocket();
 
   // Reflect logged-in state on the button if a token already exists
   (function checkLoginState() {
