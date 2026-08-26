@@ -824,7 +824,9 @@
   let historyVisible = false;
   let runTimer = null;
   let progressTimer = null;
-  let basePrice = 98.4207;
+  let basePrice = 98.4207; // fallback only, used before the first real tick arrives
+  let latestRealPrice = null;
+  let latestRealDigit = null;
   let balance = 10000.00;
   let totalStake = 0, totalPayout = 0, runsCount = 0, contractsLost = 0, contractsWon = 0;
   const STAKE = 0.35;
@@ -871,18 +873,17 @@
       progressEl.style.width = Math.min(pct, 100) + "%";
     }, 200);
 
-    const entrySpot = basePrice;
+    // Entry spot = the REAL live price at the moment the contract is "bought"
+    const entrySpot = latestRealPrice !== null ? latestRealPrice : basePrice;
+
     setTimeout(() => {
       if (!running) { clearInterval(progressTimer); return; }
       clearInterval(progressTimer);
-      const digit = randomDigit();
-      const priceMove = (Math.random() - 0.5) * 0.05;
-      basePrice = parseFloat((basePrice + priceMove).toFixed(4));
-      const exitStr = basePrice.toFixed(4);
-      basePrice = parseFloat(exitStr.slice(0, -1) + digit);
-      const exitSpot = basePrice;
 
-      updatePrice(exitSpot.toFixed(4));
+      // Exit spot + outcome digit = the REAL live price/digit at contract expiry —
+      // no more random simulation, this now reflects the actual Deriv market feed.
+      const exitSpot = latestRealPrice !== null ? latestRealPrice : basePrice;
+      const digit = latestRealDigit !== null ? latestRealDigit : randomDigit();
 
       const won = evaluateWin(digit);
       const payout = won ? STAKE * PAYOUT_RATIO : 0;
@@ -898,10 +899,6 @@
       const outcomeText = won ? "Won" : "Lost";
       statusEls.forEach(el => el.textContent = outcomeText);
       progressEl.style.width = "100%";
-
-      sampleDigits.push(digit);
-      renderGrid();
-      renderBars();
 
       if (running) {
         runTimer = setTimeout(runOneContract, 1200);
@@ -1105,7 +1102,9 @@
 
         setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
         updatePrice(quote.toFixed(4));
-        sampleDigits.push(isNaN(lastDigit) ? 0 : lastDigit);
+        latestRealPrice = quote;          // used by the Run/history page instead of fake data
+        latestRealDigit = isNaN(lastDigit) ? 0 : lastDigit;
+        sampleDigits.push(latestRealDigit);
         if (sampleDigits.length > 500) sampleDigits.shift();
         renderGrid();
         renderBars();
