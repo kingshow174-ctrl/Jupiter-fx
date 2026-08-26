@@ -703,7 +703,7 @@ try {
       }
       const accounts = accountsData.data || accountsData;
       if (!accounts || !accounts.length) return;
-      const match = accounts.find(a => (accountType === "demo" ? (a.is_virtual || a.type === "demo") : (!a.is_virtual && a.type !== "demo")));
+      const match = accounts.find(a => a.account_type === accountType);
       if (!match) {
         const targetId = accountType === "demo" ? "ddDemoBal" : "ddRealBal";
         document.getElementById(targetId).textContent = "No " + accountType + " account found";
