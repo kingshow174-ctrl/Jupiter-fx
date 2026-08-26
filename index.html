@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jupiter FX</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0f14;
+    color: #e6e6e6;
+    font-family: -apple-system, Roboto, sans-serif;
+    padding: 20px 12px;
+    padding-bottom: 110px;
+  }
+  .wrap { max-width: 420px; margin: 0 auto; }
+
+  .heading {
+    text-align: center;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .symbol-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .symbol-select {
+    flex: 1;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    text-align-last: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #e6e6e6;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .symbol-select:focus { outline: none; border-color: #2ecc71; }
+  .price-label { font-size: 13px; color: #9aa0aa; margin-right: 6px; }
+  .price-box {
+    background: #2ecc71;
+    color: #0d0f14;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .price-wrap { display: flex; align-items: center; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab-btn {
+    flex: 1;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 8px;
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #9aa0aa;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .tab-btn.active { background: #1fc7c3; color: #0d0f14; border-color: #1fc7c3; }
+
+  .prediction-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .prediction-label { font-size: 15px; color: #9aa0aa; }
+  .prediction-select {
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #e6e6e6;
+    min-width: 56px;
+    text-align: center;
+    text-align-last: center;
+  }
+
+  .card {
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 10px;
+    padding: 20px 10px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .card-subtitle {
+    text-align: center;
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+  }
+  .tile {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #0d0f14;
+  }
+  .O { background: #2ecc71; }
+  .U { background: #e8544f; }
+  .S { background: #3d9bf5; }
+  .E { background: #2ecc71; }
+  .D { background: #e8544f; }
+  .M { background: #3d9bf5; }
+  .X { background: #6b7280; }
+
+  .card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .card-title-sm { font-size: 17px; font-weight: 700; }
+
+  .badge-select {
+    background: #1a1d26;
+    border: 1px solid #2a2e3a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #e6e6e6;
+    text-align: center;
+    text-align-last: center;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  .badge-select:focus { outline: none; border-color: #1fc7c3; }
+
+  .bar-row { margin-bottom: 22px; }
+  .bar-label { font-size: 13px; color: #9aa0aa; margin-bottom: 6px; }
+  .bar-track {
+    background: #1a1d26;
+    border-radius: 4px;
+    height: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: #0d0f14;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .fill-a { background: #2ecc71; }
+  .fill-b { background: #e8544f; color: #fff; }
+  .fill-c { background: #3d9bf5; }
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .btn-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+  }
+  .btn-select { background: #e8544f; }
+  .btn-upload { background: #2ecc71; color: #0d0f14; }
+  .btn-download { background: #e08a2c; }
+
+  .runbar-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #0d0f14;
+    border-top: 1px solid #23262f;
+    padding: 10px 12px 16px;
+  }
+  .runbar-inner { max-width: 420px; margin: 0 auto; }
+  .disclaimer-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .disclaimer-btn {
+    background: #2ecc71;
+    color: #0d0f14;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+  }
+  .run-status-row { display: flex; align-items: center; gap: 10px; }
+  .run-btn {
+    background: #1fc7c3;
+    color: #0d0f14;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+    min-width: 90px;
+    justify-content: center;
+  }
+  .run-btn.stopping { background: #e8544f; color: #fff; }
+  .status-track {
+    flex: 1;
+    background: #1a1d26;
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #9aa0aa;
+    font-weight: 600;
+    position: relative;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #6b7280;
+    border-radius: 50%;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .status-dot.won { background: #2ecc71; }
+
+  /* Small caret buttons — one on the history page, one on the main bar */
+  .caret-btn {
+    background: #1a1d26;
+    color: #9aa0aa;
+    border: 1px solid #2a2e3a;
+    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #showHistoryBtn { display: none; }
+
+  /* ---------------- RUN / HISTORY PAGE ---------------- */
+  #runPage {
+    display: none;
+    background: #f5f6f8;
+    color: #1a1d26;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .run-topbar {
+    background: #ffffff;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-bottom: 1px solid #e2e4e8;
+    flex-shrink: 0;
+  }
+  .run-balance {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .demo-tag {
+    background: #2563eb;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .run-collapse-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    flex-shrink: 0;
+    background: #f5f6f8;
+  }
+  .run-reset-btn {
+    background: #f0f1f4;
+    border: 1px solid #d8dae0;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #9aa0aa;
+  }
+  .run-reset-btn.active { color: #333; cursor: pointer; }
+  .run-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 0 14px;
+    flex-shrink: 0;
+    background: #f5f6f8;
+  }
+  .run-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .run-tab.active { color: #1a1d26; border-bottom-color: #e8544f; font-weight: 700; }
+
+  .run-table-head {
+    display: flex;
+    padding: 12px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    background: #f5f6f8;
+  }
+  .col-type { width: 60px; }
+  .col-spot { flex: 1; }
+  .col-pl { width: 110px; text-align: right; }
+
+  .run-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    background: #f5f6f8;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .trade-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .trade-row .col-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .trade-row .col-spot { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+  .spot-line { display: flex; align-items: center; gap: 8px; }
+  .spot-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #e8544f; flex-shrink: 0; }
+  .spot-dot.filled { background: #e8544f; }
+  .spot-dot.exit { border: 2px solid #999; background: transparent; }
+  .trade-row .col-pl { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 13px; }
+  .pl-buy { color: #333; }
+  .pl-win { color: #1fa855; font-weight: 700; }
+  .pl-loss { color: #e8544f; font-weight: 700; }
+
+  /* Stats panel — always pinned, always visible (no separate collapse) */
+  .run-stats {
+    background: #eceef1;
+    padding: 18px 14px;
+    flex-shrink: 0;
+    border-top: 1px solid #d8dae0;
+  }
+  .run-stats-row {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .run-stats-row:last-child { margin-bottom: 0; }
+  .run-stats-row > div { flex: 1; }
+  .stat-label { font-size: 12px; color: #777; margin-bottom: 6px; }
+  .stat-value { font-size: 15px; font-weight: 700; color: #1a1d26; }
+  .stat-value.profit { color: #1fa855; }
+  .stat-value.loss { color: #e8544f; }
+
+  .run-bottombar {
+    flex-shrink: 0;
+    background: #fff;
+    border-top: 1px solid #e2e4e8;
+    padding: 10px 14px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .run-toggle-btn {
+    background: #e8544f;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 22px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 90px;
+    justify-content: center;
+  }
+  .run-toggle-btn.is-run { background: #1fc7c3; color: #0d0f14; }
+  .run-status-bar {
+    flex: 1;
+    background: #f0f1f4;
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    position: relative;
+    overflow: hidden;
+  }
+  .run-status-bar .progress {
+    position: absolute;
+    left: 0; bottom: 0; top: 0;
+    background: #d7f5e9;
+    border-radius: 8px;
+    transition: width 0.3s linear;
+    z-index: 0;
+  }
+  .run-status-bar span { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="mainPage">
+
+  <div class="heading">ELITE ANALYSIS</div>
+  <div class="symbol-row">
+    <select class="symbol-select" id="symbolSelect" onchange="onSymbolChange()">
+      <optgroup label="Volatility Indices">
+        <option value="1HZ10V">VOLATILITY 10 (1s) INDEX</option>
+        <option value="R_10">VOLATILITY 10 INDEX</option>
+        <option value="1HZ25V">VOLATILITY 25 (1s) INDEX</option>
+        <option value="R_25">VOLATILITY 25 INDEX</option>
+        <option value="1HZ50V">VOLATILITY 50 (1s) INDEX</option>
+        <option value="R_50" selected>VOLATILITY 50 INDEX</option>
+        <option value="1HZ75V">VOLATILITY 75 (1s) INDEX</option>
+        <option value="R_75">VOLATILITY 75 INDEX</option>
+        <option value="1HZ100V">VOLATILITY 100 (1s) INDEX</option>
+        <option value="R_100">VOLATILITY 100 INDEX</option>
+      </optgroup>
+      <optgroup label="Jump Indices">
+        <option value="JD10">JUMP 10 INDEX</option>
+        <option value="JD25">JUMP 25 INDEX</option>
+        <option value="JD50">JUMP 50 INDEX</option>
+        <option value="JD75">JUMP 75 INDEX</option>
+        <option value="JD100">JUMP 100 INDEX</option>
+      </optgroup>
+      <optgroup label="Boom / Crash">
+        <option value="BOOM300N">BOOM 300 INDEX</option>
+        <option value="BOOM500">BOOM 500 INDEX</option>
+        <option value="BOOM1000">BOOM 1000 INDEX</option>
+        <option value="CRASH300N">CRASH 300 INDEX</option>
+        <option value="CRASH500">CRASH 500 INDEX</option>
+        <option value="CRASH1000">CRASH 1000 INDEX</option>
+      </optgroup>
+      <optgroup label="Step Indices">
+        <option value="STPRNG">STEP INDEX</option>
+      </optgroup>
+      <optgroup label="Range Break">
+        <option value="RB100">RANGE BREAK 100</option>
+        <option value="RB200">RANGE BREAK 200</option>
+      </optgroup>
+    </select>
+    <div class="price-wrap">
+      <span class="price-label">Price</span>
+      <div class="price-box" id="priceValue">98.4207</div>
+    </div>
+  </div>
+
+  <div class="tabs" id="contractTabs">
+    <div class="tab-btn active" data-mode="overunder" onclick="switchMode('overunder')">OVER/UNDER</div>
+    <div class="tab-btn" data-mode="evenodd" onclick="switchMode('evenodd')">EVEN/ODD</div>
+    <div class="tab-btn" data-mode="matchesdiffers" onclick="switchMode('matchesdiffers')">MATCHES/DIFFERS</div>
+  </div>
+
+  <div class="prediction-row" id="predictionRow">
+    <span class="prediction-label">Prediction</span>
+    <select class="prediction-select" id="predictionSelect" onchange="onPredictionChange()">
+      <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+      <option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+      <option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="ldpTitle">OVER UNDER LDP</div>
+    <div class="card-subtitle">last 30 ticks</div>
+    <div class="grid" id="ldpGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title-sm" id="pctTitle">OVER UNDER PERCENTAGES</div>
+      <select class="badge-select" id="sampleSizeSelect" onchange="onSampleSizeChange()">
+        <option value="20">20</option><option value="30">30</option><option value="50">50</option>
+        <option value="100" selected>100</option>
+      </select>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label" id="labelA">OVER <span id="valLabelA">3</span></div>
+      <div class="bar-track"><div class="bar-fill fill-a" id="barA" style="width:0%">0%</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" id="labelB">UNDER <span id="valLabelB">3</span></div>
+      <div class="bar-track"><div class="bar-fill fill-b" id="barB" style="width:0%">0%</div></div>
+    </div>
+    <div class="bar-row" id="rowC">
+      <div class="bar-label" id="labelC">SAME <span id="valLabelC">3</span></div>
+      <div class="bar-track"><div class="bar-fill fill-c" id="barC" style="width:0%">0%</div></div>
+    </div>
+
+    <div class="scale"><span>0</span><span>20</span><span>40</span><span>60</span></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-select" onclick="alert('Select Bot')">☰ Select Bot</button>
+    <button class="btn btn-upload" onclick="alert('Upload Bot')">⬆ Upload Bot</button>
+    <button class="btn btn-download" onclick="alert('Download Bot')">⬇ Download Bot</button>
+  </div>
+
+</div>
+
+<div class="runbar-wrap" id="mainRunbar">
+  <div class="runbar-inner">
+    <div class="disclaimer-row">
+      <button class="caret-btn" id="showHistoryBtn" onclick="showHistoryView()">▲</button>
+      <span></span>
+      <button class="disclaimer-btn">Risk Disclaimer</button>
+    </div>
+    <div class="run-status-row">
+      <button class="run-btn" id="runBtn" onclick="toggleBot()">▶ Run</button>
+      <div class="status-track">
+        <span id="statusText">Bot is not running</span>
+        <span class="status-dot" id="statusDot"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RUN / HISTORY PAGE ============ -->
+<div id="runPage">
+  <div class="run-topbar">
+    <div class="run-balance">
+      <span id="runBalance">10,000.00 USD</span>
+      <span class="demo-tag">Demo</span>
+    </div>
+  </div>
+
+  <div class="run-collapse-row">
+    <span style="width:34px;"></span>
+    <button class="caret-btn" onclick="hideHistoryView()">▼</button>
+    <button class="run-reset-btn" id="resetBtn" onclick="resetHistory()">Reset</button>
+  </div>
+
+  <div class="run-tabs">
+    <div class="run-tab active" data-tab="transactions" onclick="switchRunTab('transactions')">Transactions</div>
+    <div class="run-tab" data-tab="summary" onclick="switchRunTab('summary')">Summary</div>
+    <div class="run-tab" data-tab="journal" onclick="switchRunTab('journal')">Journal</div>
+  </div>
+
+  <div class="run-table-head" id="tableHead">
+    <div class="col-type">Type</div>
+    <div class="col-spot">Entry/Exit spot</div>
+    <div class="col-pl">Buy price and P/L</div>
+  </div>
+
+  <div class="run-scroll-area">
+    <div id="transactionsView">
+      <div id="tradeRows"></div>
+    </div>
+    <div id="summaryView" style="display:none; padding:20px 14px; font-size:14px; color:#333;">
+      Live account summary — total stake, payout and win rate appear in the stats panel below.
+    </div>
+    <div id="journalView" style="display:none; padding:20px 14px; font-size:13px; color:#555;"></div>
+  </div>
+
+  <div class="run-stats" id="runStats">
+    <div class="run-stats-row">
+      <div><div class="stat-label">Total stake</div><div class="stat-value" id="statStake">0.00 USD</div></div>
+      <div><div class="stat-label">Total payout</div><div class="stat-value" id="statPayout">0.00 USD</div></div>
+      <div><div class="stat-label">No. of runs</div><div class="stat-value" id="statRuns">0</div></div>
+    </div>
+    <div class="run-stats-row">
+      <div><div class="stat-label">Contracts lost</div><div class="stat-value" id="statLost">0</div></div>
+      <div><div class="stat-label">Contracts won</div><div class="stat-value" id="statWon">0</div></div>
+      <div><div class="stat-label">Total profit/loss</div><div class="stat-value" id="statPL">0.00 USD</div></div>
+    </div>
+  </div>
+
+  <div class="run-bottombar">
+    <button class="run-toggle-btn" id="runPageToggleBtn" onclick="toggleBot()">Stop</button>
+    <div class="run-status-bar">
+      <div class="progress" id="runProgress" style="width:0%"></div>
+      <span id="runStatusText">Bot is not running</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------------- ANALYSIS DATA (unchanged) ----------------
+  const sampleDigits = [
+    7,3,9,4,2,3,6,3,0,9, 3,4,0,6,4,3,2,0,4,0, 9,0,4,9,9,4,9,9,9,0,
+    1,5,8,2,7,6,3,9,0,4, 5,1,6,8,2,9,3,7,0,4, 6,2,8,1,5,9,3,0,7,4,
+    9,3,1,6,8,2,5,0,7,4, 3,8,1,6,9,2,5,0,7,4, 6,1,9,3,8,2,5,0,7,4,
+    2,8,5,1,9,6,3,0,7,4
+  ];
+  const GRID_TILE_COUNT = 30;
+  let currentMode = "overunder";
+  let prediction = 3;
+  let sampleSize = 100;
+
+  const grid = document.getElementById("ldpGrid");
+  function getGridDigits() { return sampleDigits.slice(-GRID_TILE_COUNT); }
+  function getStatsDigits() { return sampleDigits.slice(-sampleSize); }
+
+  function classifyOverUnder(d, p) { if (d > p) return "O"; if (d < p) return "U"; return "S"; }
+  function classifyEvenOdd(d) { return (d % 2 === 0) ? "E" : "D"; }
+  function classifyMatchesDiffers(d, p) { return (d === p) ? "M" : "X"; }
+
+  function renderGrid() {
+    grid.innerHTML = "";
+    getGridDigits().forEach(d => {
+      let cls;
+      if (currentMode === "overunder") cls = classifyOverUnder(d, prediction);
+      else if (currentMode === "evenodd") cls = classifyEvenOdd(d);
+      else cls = classifyMatchesDiffers(d, prediction);
+      const div = document.createElement("div");
+      div.className = "tile " + cls;
+      div.textContent = cls;
+      grid.appendChild(div);
+    });
+  }
+
+  function computeStats() {
+    const digits = getStatsDigits();
+    const total = digits.length;
+    if (currentMode === "overunder") {
+      let o=0,u=0,s=0;
+      digits.forEach(d => { if (d > prediction) o++; else if (d < prediction) u++; else s++; });
+      return { aPct: Math.round(o/total*100), bPct: Math.round(u/total*100), cPct: Math.round(s/total*100), hasThird: true };
+    } else if (currentMode === "evenodd") {
+      let e=0,o=0;
+      digits.forEach(d => { if (d % 2 === 0) e++; else o++; });
+      return { aPct: Math.round(e/total*100), bPct: Math.round(o/total*100), cPct:0, hasThird:false };
+    } else {
+      let m=0,x=0;
+      digits.forEach(d => { if (d === prediction) m++; else x++; });
+      return { aPct: Math.round(m/total*100), bPct: Math.round(x/total*100), cPct:0, hasThird:false };
+    }
+  }
+
+  function renderBars() {
+    const { aPct, bPct, cPct, hasThird } = computeStats();
+    const barA = document.getElementById("barA"), barB = document.getElementById("barB"), barC = document.getElementById("barC");
+    const rowC = document.getElementById("rowC");
+    barA.style.width = Math.min(aPct,60)/60*100 + "%"; barA.textContent = aPct + "%";
+    barB.style.width = Math.min(bPct,60)/60*100 + "%"; barB.textContent = bPct + "%";
+    if (hasThird) { rowC.style.display = "block"; barC.style.width = Math.min(cPct,60)/60*100 + "%"; barC.textContent = cPct + "%"; }
+    else rowC.style.display = "none";
+
+    if (currentMode === "overunder") {
+      document.getElementById("labelA").innerHTML = 'OVER <span>' + prediction + '</span>';
+      document.getElementById("labelB").innerHTML = 'UNDER <span>' + prediction + '</span>';
+      document.getElementById("labelC").innerHTML = 'SAME <span>' + prediction + '</span>';
+    } else if (currentMode === "evenodd") {
+      document.getElementById("labelA").innerHTML = 'EVEN';
+      document.getElementById("labelB").innerHTML = 'ODD';
+    } else {
+      document.getElementById("labelA").innerHTML = 'MATCHES <span>' + prediction + '</span>';
+      document.getElementById("labelB").innerHTML = 'DIFFERS <span>' + prediction + '</span>';
+    }
+  }
+
+  function updateTitles() {
+    const t = {
+      overunder: ["OVER UNDER LDP", "OVER UNDER PERCENTAGES"],
+      evenodd: ["EVEN ODD LDP", "EVEN ODD PERCENTAGES"],
+      matchesdiffers: ["MATCHES DIFFERS LDP", "MATCHES DIFFERS PERCENTAGES"]
+    };
+    document.getElementById("ldpTitle").textContent = t[currentMode][0];
+    document.getElementById("pctTitle").textContent = t[currentMode][1];
+  }
+  function updatePredictionVisibility() {
+    document.getElementById("predictionRow").style.display = (currentMode === "evenodd") ? "none" : "flex";
+  }
+  function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    updateTitles(); updatePredictionVisibility(); renderGrid(); renderBars();
+  }
+  function onPredictionChange() {
+    prediction = parseInt(document.getElementById("predictionSelect").value, 10);
+    renderGrid(); renderBars();
+  }
+  function onSampleSizeChange() {
+    sampleSize = parseInt(document.getElementById("sampleSizeSelect").value, 10);
+    renderBars();
+  }
+  function updatePrice(p) { document.getElementById("priceValue").textContent = p; }
+  function onSymbolChange() {
+    const sel = document.getElementById("symbolSelect");
+    console.log("Symbol changed:", sel.options[sel.selectedIndex].text, sel.value);
+  }
+
+  updateTitles(); updatePredictionVisibility(); renderGrid(); renderBars();
+
+  // ---------------- RUN / HISTORY SIMULATION ----------------
+  let running = false;
+  let hasStartedOnce = false;
+  let historyVisible = false;
+  let runTimer = null;
+  let progressTimer = null;
+  let basePrice = 98.4207;
+  let balance = 10000.00;
+  let totalStake = 0, totalPayout = 0, runsCount = 0, contractsLost = 0, contractsWon = 0;
+  const STAKE = 0.35;
+  const PAYOUT_RATIO = 1.9;
+
+  function fmt(n) { return n.toFixed(2); }
+  function randomDigit() { return Math.floor(Math.random() * 10); }
+
+  function evaluateWin(digit) {
+    if (currentMode === "overunder") return digit > prediction;
+    if (currentMode === "evenodd") return digit % 2 === 0;
+    return digit === prediction;
+  }
+
+  function pushTradeRow(entrySpot, exitSpot, stake, won) {
+    const rowsEl = document.getElementById("tradeRows");
+    const row = document.createElement("div");
+    row.className = "trade-row";
+    const pl = won ? (stake * (PAYOUT_RATIO - 1)) : -stake;
+    row.innerHTML = `
+      <div class="col-type">📊</div>
+      <div class="col-spot">
+        <div class="spot-line"><span class="spot-dot filled"></span>${entrySpot.toFixed(4)}</div>
+        <div class="spot-line"><span class="spot-dot exit"></span>${exitSpot.toFixed(4)}</div>
+      </div>
+      <div class="col-pl">
+        <div class="pl-buy">${fmt(stake)} USD</div>
+        <div class="${won ? 'pl-win' : 'pl-loss'}">${won ? '+' : ''}${fmt(pl)} USD</div>
+      </div>`;
+    rowsEl.insertBefore(row, rowsEl.firstChild);
+  }
+
+  function runOneContract() {
+    if (!running) return;
+    const statusEls = [document.getElementById("runStatusText"), document.getElementById("statusText")];
+    const progressEl = document.getElementById("runProgress");
+    statusEls.forEach(el => el.textContent = "Contract bought");
+    progressEl.style.width = "0%";
+
+    let pct = 0;
+    clearInterval(progressTimer);
+    progressTimer = setInterval(() => {
+      pct += 20;
+      progressEl.style.width = Math.min(pct, 100) + "%";
+    }, 200);
+
+    const entrySpot = basePrice;
+    setTimeout(() => {
+      if (!running) { clearInterval(progressTimer); return; }
+      clearInterval(progressTimer);
+      const digit = randomDigit();
+      const priceMove = (Math.random() - 0.5) * 0.05;
+      basePrice = parseFloat((basePrice + priceMove).toFixed(4));
+      const exitStr = basePrice.toFixed(4);
+      basePrice = parseFloat(exitStr.slice(0, -1) + digit);
+      const exitSpot = basePrice;
+
+      updatePrice(exitSpot.toFixed(4));
+
+      const won = evaluateWin(digit);
+      const payout = won ? STAKE * PAYOUT_RATIO : 0;
+      totalStake += STAKE;
+      totalPayout += payout;
+      runsCount += 1;
+      if (won) { contractsWon++; balance += (payout - STAKE); }
+      else { contractsLost++; balance -= STAKE; }
+
+      pushTradeRow(entrySpot, exitSpot, STAKE, won);
+      updateStats();
+
+      const outcomeText = won ? "Won" : "Lost";
+      statusEls.forEach(el => el.textContent = outcomeText);
+      progressEl.style.width = "100%";
+
+      sampleDigits.push(digit);
+      renderGrid();
+      renderBars();
+
+      if (running) {
+        runTimer = setTimeout(runOneContract, 1200);
+      }
+    }, 1000);
+  }
+
+  function updateStats() {
+    document.getElementById("statStake").textContent = fmt(totalStake) + " USD";
+    document.getElementById("statPayout").textContent = fmt(totalPayout) + " USD";
+    document.getElementById("statRuns").textContent = runsCount;
+    document.getElementById("statLost").textContent = contractsLost;
+    document.getElementById("statWon").textContent = contractsWon;
+    const pl = totalPayout - totalStake;
+    const plEl = document.getElementById("statPL");
+    plEl.textContent = (pl >= 0 ? "+" : "") + fmt(pl) + " USD";
+    plEl.className = "stat-value " + (pl >= 0 ? "profit" : "loss");
+    document.getElementById("runBalance").textContent = fmt(balance) + " USD";
+  }
+
+  // Single toggle: Run <-> Stop. Resuming continues the SAME session (no reset).
+  function toggleBot() {
+    if (running) {
+      running = false;
+      clearTimeout(runTimer);
+      clearInterval(progressTimer);
+      document.getElementById("runProgress").style.width = "0%";
+      document.getElementById("runStatusText").textContent = "Bot is not running";
+      document.getElementById("statusText").textContent = "Bot is not running";
+      document.getElementById("statusDot").className = "status-dot";
+      document.getElementById("resetBtn").classList.add("active");
+      setToggleLabel(false);
+    } else {
+      running = true;
+      document.getElementById("statusText").textContent = "Bot is running";
+      document.getElementById("statusDot").className = "status-dot won";
+      document.getElementById("resetBtn").classList.remove("active");
+      setToggleLabel(true);
+
+      if (!hasStartedOnce) {
+        hasStartedOnce = true;
+        showHistoryView();
+      }
+      runOneContract();
+    }
+  }
+
+  function setToggleLabel(isRunning) {
+    const mainBtn = document.getElementById("runBtn");
+    const pageBtn = document.getElementById("runPageToggleBtn");
+    if (isRunning) {
+      mainBtn.textContent = "Stop";
+      mainBtn.classList.add("stopping");
+      pageBtn.textContent = "Stop";
+      pageBtn.classList.remove("is-run");
+    } else {
+      mainBtn.textContent = "▶ Run";
+      mainBtn.classList.remove("stopping");
+      pageBtn.textContent = "Run";
+      pageBtn.classList.add("is-run");
+    }
+  }
+
+  function resetHistory() {
+    if (running) return;
+    document.getElementById("tradeRows").innerHTML = "";
+    totalStake = 0; totalPayout = 0; runsCount = 0; contractsLost = 0; contractsWon = 0;
+    balance = 10000.00;
+    updateStats();
+  }
+
+  function switchRunTab(tab) {
+    document.querySelectorAll(".run-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+    document.getElementById("transactionsView").style.display = tab === "transactions" ? "block" : "none";
+    document.getElementById("summaryView").style.display = tab === "summary" ? "block" : "none";
+    document.getElementById("journalView").style.display = tab === "journal" ? "block" : "none";
+    document.getElementById("tableHead").style.display = tab === "transactions" ? "flex" : "none";
+  }
+
+  // The single red caret — toggles the FULL history page open/closed.
+  // Bot keeps running in the background either way.
+  function showHistoryView() {
+    historyVisible = true;
+    document.getElementById("runPage").style.display = "flex";
+    document.getElementById("mainRunbar").style.display = "none";
+  }
+  function hideHistoryView() {
+    historyVisible = false;
+    document.getElementById("runPage").style.display = "none";
+    document.getElementById("mainRunbar").style.display = "block";
+    document.getElementById("showHistoryBtn").style.display = "flex";
+  }
+
+  updateStats();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jupiter FX</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0f14;
+    color: #e6e6e6;
+    font-family: -apple-system, Roboto, sans-serif;
+    padding: 20px 12px;
+  }
+  .wrap {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .heading {
+    text-align: center;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .symbol-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .symbol {
+    flex: 1;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .price-label {
+    font-size: 13px;
+    color: #9aa0aa;
+    margin-right: 6px;
+  }
+  .price-box {
+    background: #2ecc71;
+    color: #0d0f14;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .price-wrap {
+    display: flex;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="heading">ELITE ANALYSIS</div>
+
+  <div class="symbol-row">
+    <div class="symbol" id="symbolName">VOLATILITY 50 INDEX</div>
+    <div class="price-wrap">
+      <span class="price-label">Price</span>
+      <div class="price-box" id="priceValue">98.4207</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Placeholder — later we'll feed this live tick data
+  function updatePrice(newPrice) {
+    document.getElementById("priceValue").textContent = newPrice;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jupiter FX</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0f14;
+    color: #e6e6e6;
+    font-family: -apple-system, Roboto, sans-serif;
+    padding: 20px 12px;
+  }
+  .wrap {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .heading {
+    text-align: center;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+  .prediction-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .prediction-label {
+    font-size: 15px;
+    color: #9aa0aa;
+  }
+  .prediction-box {
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 40px;
+    text-align: center;
+  }
+  .card {
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 10px;
+    padding: 20px 14px;
+  }
+  .card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .badge {
+    background: #1a1d26;
+    border: 1px solid #2a2e3a;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .bar-row {
+    margin-bottom: 22px;
+  }
+  .bar-label {
+    font-size: 13px;
+    color: #9aa0aa;
+    margin-bottom: 6px;
+  }
+  .bar-track {
+    background: #1a1d26;
+    border-radius: 4px;
+    height: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: #0d0f14;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .over-fill { background: #2ecc71; }
+  .under-fill { background: #e8544f; color: #fff; }
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="heading">OVER UNDER ANALYSIS</div>
+
+  <div class="prediction-row">
+    <span class="prediction-label">Prediction</span>
+    <div class="prediction-box" id="predictionValue">3</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">OVER UNDER PERCENTAGES</div>
+      <div class="badge" id="sampleSize">100</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">OVER <span id="overLabel">3</span></div>
+      <div class="bar-track">
+        <div class="bar-fill over-fill" id="overBar" style="width:0%">0%</div>
+      </div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">UNDER <span id="underLabel">3</span></div>
+      <div class="bar-track">
+        <div class="bar-fill under-fill" id="underBar" style="width:0%">0%</div>
+      </div>
+    </div>
+
+    <div class="scale">
+      <span>0</span><span>20</span><span>40</span><span>60</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setPercentages(overPct, underPct, prediction) {
+    document.getElementById("predictionValue").textContent = prediction;
+    document.getElementById("overLabel").textContent = prediction;
+    document.getElementById("underLabel").textContent = prediction;
+
+    const overBar = document.getElementById("overBar");
+    const underBar = document.getElementById("underBar");
+
+    // scale bar width relative to the 0-60 axis shown
+    overBar.style.width = Math.min(overPct, 60) / 60 * 100 + "%";
+    overBar.textContent = overPct + "%";
+
+    underBar.style.width = Math.min(underPct, 60) / 60 * 100 + "%";
+    underBar.textContent = underPct + "%";
+  }
+
+  // sample values from your screenshot
+  setPercentages(56, 33, 3);
+</script>
+
+</body>
+</html>
