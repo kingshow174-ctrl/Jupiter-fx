@@ -686,7 +686,7 @@ try {
   connectDerivSocket();
 
   // ---------------- AUTHENTICATED BALANCE (OTP flow) ----------------
-  let authSocket = null;
+  let authSockets = { demo: null, real: null }; // one live authenticated socket per account
   async function connectAuthenticatedAccount(accountType) {
     const token = localStorage.getItem("deriv_access_token");
     if (!token) return;
@@ -746,44 +746,103 @@ try {
   // ---------------- MANUAL TRADE OVERLAY ----------------
   function openTradeSheet() { document.getElementById("tradeOverlay").classList.add("open"); }
   function closeTradeSheet() { document.getElementById("tradeOverlay").classList.remove("open"); }
+  let pendingTradeRow = null; // trade row awaiting a real outcome from Deriv
+
   function placeManualTrade(direction) {
     const fb = document.getElementById("tradeFeedback");
+    const sock = authSockets[activeAccountType];
 
-    // Real-money trading isn't wired to Deriv's actual "buy" API yet — block it
-    // rather than fake a trade against real funds.
-    if (activeAccountType === "real") {
-      fb.textContent = "⚠️ Real-account trading isn't connected to Deriv's buy API yet. Switch to Demo to test.";
+    if (!sock || sock.readyState !== WebSocket.OPEN) {
+      fb.textContent = "⚠️ Not authenticated on this account yet — reselect it from the account menu.";
       fb.style.color = "#e8544f";
       return;
     }
 
     const stake = parseFloat(document.getElementById("manualStake").value) || 1;
+    const duration = parseInt(document.getElementById("manualDuration").value, 10) || 5;
+    const currentBal = activeAccountType === "demo" ? demoBalance : realBalance;
 
-    if (stake > demoBalance) {
-      fb.textContent = "⚠️ Insufficient balance. Demo balance: " + fmt(demoBalance) + " USD";
+    if (stake > currentBal) {
+      fb.textContent = "⚠️ Insufficient balance. " + activeAccountType + " balance: " + fmt(currentBal) + " USD";
       fb.style.color = "#e8544f";
       return;
     }
 
     fb.style.color = "";
+    fb.textContent = "Requesting price…";
+
+    const contractType = contractTypeFor(currentMode, direction);
+    const req = {
+      proposal: 1,
+      amount: stake,
+      basis: "stake",
+      contract_type: contractType,
+      currency: "USD",
+      duration: duration,
+      duration_unit: "t",
+      symbol: currentSymbol
+    };
+    if (contractType === "DIGITOVER" || contractType === "DIGITUNDER" || contractType === "DIGITMATCH" || contractType === "DIGITDIFF") {
+      req.barrier = prediction;
+    }
+    pendingManualRequest = { accountType: activeAccountType, direction, stake };
+    sock.send(JSON.stringify(req));
+  }
+
+  let pendingManualRequest = null;
+
+  function handleProposalResponse(accountType, proposal) {
+    if (!pendingManualRequest || pendingManualRequest.accountType !== accountType) return;
+    const fb = document.getElementById("tradeFeedback");
+    const sock = authSockets[accountType];
+    fb.textContent = "Buying… payout " + fmt(parseFloat(proposal.payout)) + " USD";
+    sock.send(JSON.stringify({ buy: proposal.id, price: proposal.ask_price }));
+  }
+
+  function handleBuyResponse(accountType, buy) {
+    const fb = document.getElementById("tradeFeedback");
+    if (buy.error) {
+      fb.textContent = "⚠️ " + buy.error.message;
+      fb.style.color = "#e8544f";
+      pendingManualRequest = null;
+      return;
+    }
+    fb.textContent = "Contract bought — waiting for result…";
     const entry = latestRealPrice !== null ? latestRealPrice : basePrice;
-    fb.textContent = "Placing " + direction.toUpperCase() + " trade at " + entry.toFixed(4) + "…";
 
-    setTimeout(() => {
-      const digit = latestRealDigit !== null ? latestRealDigit : randomDigit();
-      const won = direction === "over" ? digit > prediction : digit < prediction;
-      const exit = latestRealPrice !== null ? latestRealPrice : basePrice;
-      const payout = won ? stake * PAYOUT_RATIO : 0;
+    pendingTradeRow = {
+      contractId: buy.contract_id,
+      entrySpot: entry,
+      stake: pendingManualRequest ? pendingManualRequest.stake : parseFloat(buy.buy_price),
+      accountType: accountType
+    };
 
-      totalStake += stake; totalPayout += payout; runsCount += 1;
-      if (won) { contractsWon++; demoBalance += (payout - stake); } else { contractsLost++; demoBalance -= stake; }
+    const sock = authSockets[accountType];
+    sock.send(JSON.stringify({ proposal_open_contract: 1, contract_id: buy.contract_id, subscribe: 1 }));
+    pendingManualRequest = null;
+  }
 
-      pushTradeRow(entry, exit, stake, won);
-      updateStats();
-      updateAccountBalanceDisplay();
+  function handleContractUpdate(contract) {
+    if (!pendingTradeRow || contract.contract_id !== pendingTradeRow.contractId) return;
+    if (!contract.is_sold) return; // still running — wait for the final update
 
-      fb.textContent = won ? "✅ Won! Exit " + exit.toFixed(4) : "❌ Lost. Exit " + exit.toFixed(4);
-    }, 1500);
+    const fb = document.getElementById("tradeFeedback");
+    const won = parseFloat(contract.profit) > 0;
+    const exitSpot = parseFloat(contract.exit_tick) || pendingTradeRow.entrySpot;
+    const stake = pendingTradeRow.stake;
+
+    totalStake += stake;
+    totalPayout += won ? parseFloat(contract.payout) : 0;
+    runsCount += 1;
+    if (won) contractsWon++; else contractsLost++;
+
+    pushTradeRow(pendingTradeRow.entrySpot, exitSpot, stake, won);
+    updateStats();
+    // Balance updates automatically via the live "balance" subscription on this socket.
+
+    fb.textContent = won ? "✅ Won! Exit " + exitSpot.toFixed(4) : "❌ Lost. Exit " + exitSpot.toFixed(4);
+    fb.style.color = "";
+    pendingTradeRow = null;
   }
 
   // Reflects the correct per-account balance — never mixes Real and Demo numbers
@@ -811,6 +870,12 @@ try {
 
   function fmt(n) { return n.toFixed(2); }
   function randomDigit() { return Math.floor(Math.random() * 10); }
+
+  function contractTypeFor(mode, direction) {
+    if (mode === "overunder") return direction === "over" ? "DIGITOVER" : "DIGITUNDER";
+    if (mode === "evenodd") return direction === "over" ? "DIGITEVEN" : "DIGITODD"; // "over" slot = Even, "under" slot = Odd
+    return direction === "over" ? "DIGITMATCH" : "DIGITDIFF"; // "over" slot = Matches, "under" slot = Differs
+  }
   function evaluateWin(digit) {
     if (currentMode === "overunder") return digit > prediction;
     if (currentMode === "evenodd") return digit % 2 === 0;
