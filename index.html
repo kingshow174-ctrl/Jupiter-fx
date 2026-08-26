@@ -15,6 +15,47 @@
   }
   .wrap { max-width: 420px; margin: 0 auto; }
 
+  .account-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #12151c;
+    border: 1px solid #23262f;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-icon { font-size: 22px; }
+  .brand-name { font-weight: 800; font-size: 16px; letter-spacing: 0.5px; }
+  .account-switch {
+    display: flex;
+    gap: 6px;
+    background: #1a1d26;
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .acct-pill {
+    background: transparent;
+    border: none;
+    color: #9aa0aa;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .acct-pill.active {
+    background: #2ecc71;
+    color: #0d0f14;
+  }
   .heading {
     text-align: center;
     background: #12151c;
@@ -479,6 +520,20 @@
 
 <div class="wrap" id="mainPage">
 
+  <div class="account-bar">
+    <div class="brand">
+      <span class="brand-icon">🪐</span>
+      <span class="brand-name">Jupiter FX</span>
+    </div>
+    <div class="account-switch">
+      <button class="acct-pill active" id="acctRealBtn" onclick="switchAccount('real')">
+        🇺🇸 <span id="acctRealBalance">Real</span>
+      </button>
+      <button class="acct-pill" id="acctDemoBtn" onclick="switchAccount('demo')">
+        🎮 <span id="acctDemoBalance">Demo</span>
+      </button>
+    </div>
+  </div>
   <div class="heading">ELITE ANALYSIS</div>
   <button id="derivLoginBtn" onclick="loginWithDeriv()" style="width:100%; background:#e8544f; color:#fff; border:none; border-radius:8px; padding:12px; font-weight:700; font-size:14px; margin-bottom:14px; cursor:pointer;">Login with Deriv</button>
   <div class="symbol-row">
@@ -993,34 +1048,42 @@
     if (el) { el.textContent = text; el.style.color = color || "#6b7280"; }
   }
 
+  let firstTickTimer = null;
+
   function connectDerivSocket() {
     if (derivSocket) {
       try { derivSocket.close(); } catch (e) {}
     }
     setWsStatus("🔌 Connecting to Deriv…", "#9aa0aa");
+    updatePrice("Connecting…");
 
     derivSocket = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=" + DERIV_APP_ID);
 
     derivSocket.onopen = () => {
-      setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
+      setWsStatus("✅ Socket open — requesting ticks…", "#2ecc71");
       subscribeToTicks(currentSymbol);
 
-      // NOTE: legacy WS "authorize" expects an old-style API token, not the
-      // new OAuth2 bearer token — skipping for now to avoid noisy errors.
-      // Ticks/prices below don't require authorization; they're public data.
+      clearTimeout(firstTickTimer);
+      firstTickTimer = setTimeout(() => {
+        setWsStatus("⚠️ No ticks received yet — retrying…", "#e8544f");
+        console.warn("No tick received within 8s for symbol:", currentSymbol);
+      }, 8000);
     };
 
     derivSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log("WS message:", data.msg_type, data);
 
       if (data.msg_type === "tick" && data.tick) {
+        clearTimeout(firstTickTimer);
         const quote = data.tick.quote;
         const quoteStr = quote.toString();
         const lastDigit = parseInt(quoteStr.slice(-1), 10);
 
+        setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
         updatePrice(quote.toFixed(4));
         sampleDigits.push(isNaN(lastDigit) ? 0 : lastDigit);
-        if (sampleDigits.length > 500) sampleDigits.shift(); // keep memory bounded
+        if (sampleDigits.length > 500) sampleDigits.shift();
         renderGrid();
         renderBars();
       }
@@ -1034,18 +1097,32 @@
 
       if (data.error) {
         console.warn("Deriv API error:", data.error.message);
+        setWsStatus("⚠️ " + data.error.message, "#e8544f");
       }
     };
 
-    derivSocket.onerror = () => {
+    derivSocket.onerror = (err) => {
+      console.error("WS error event:", err);
       setWsStatus("⚠️ Connection error", "#e8544f");
     };
 
-    derivSocket.onclose = () => {
+    derivSocket.onclose = (event) => {
+      console.warn("WS closed:", event.code, event.reason);
       setWsStatus("🔌 Disconnected — reconnecting…", "#e8544f");
       clearTimeout(wsReconnectTimer);
       wsReconnectTimer = setTimeout(connectDerivSocket, 3000);
     };
+  }
+
+  // Account switcher — placeholder until authenticated balance calls work
+  let activeAccount = "real";
+  function switchAccount(type) {
+    activeAccount = type;
+    document.getElementById("acctRealBtn").classList.toggle("active", type === "real");
+    document.getElementById("acctDemoBtn").classList.toggle("active", type === "demo");
+    console.log("Switched to account type:", type);
+    // Real balance requires authenticated API token calls — wired in once
+    // Deriv's OAuth2 tokens are confirmed compatible with the WS "authorize" call.
   }
 
   function subscribeToTicks(symbol) {
