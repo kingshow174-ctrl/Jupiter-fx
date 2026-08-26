@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jupiter FX — Signing in...</title>
+<style>
+  body {
+    background: #0d0f14;
+    color: #e6e6e6;
+    font-family: -apple-system, Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+    padding: 20px;
+  }
+  .msg { font-size: 15px; color: #9aa0aa; }
+  .error { color: #e8544f; }
+</style>
+</head>
+<body>
+  <div class="msg" id="statusMsg">Signing you in…</div>
+
+<script>
+  async function handleCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    const error = params.get("error");
+    const statusEl = document.getElementById("statusMsg");
+
+    if (error) {
+      statusEl.textContent = "Login failed: " + error;
+      statusEl.className = "msg error";
+      return;
+    }
+
+    const storedState = sessionStorage.getItem("oauth_state");
+    const codeVerifier = sessionStorage.getItem("pkce_code_verifier");
+
+    if (!code || !state || state !== storedState) {
+      statusEl.textContent = "Security check failed. Please try logging in again.";
+      statusEl.className = "msg error";
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, code_verifier: codeVerifier })
+      });
+      const data = await res.json();
+
+      if (data.access_token) {
+        sessionStorage.setItem("deriv_access_token", data.access_token);
+        sessionStorage.removeItem("pkce_code_verifier");
+        sessionStorage.removeItem("oauth_state");
+        window.location.href = "/";
+      } else {
+        statusEl.textContent = "Login failed. Please try again.";
+        statusEl.className = "msg error";
+      }
+    } catch (e) {
+      statusEl.textContent = "Something went wrong. Please try again.";
+      statusEl.className = "msg error";
+    }
+  }
+  handleCallback();
+</script>
+</body>
+</html>

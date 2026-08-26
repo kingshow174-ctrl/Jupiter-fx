@@ -480,6 +480,7 @@
 <div class="wrap" id="mainPage">
 
   <div class="heading">ELITE ANALYSIS</div>
+  <button id="derivLoginBtn" onclick="loginWithDeriv()" style="width:100%; background:#e8544f; color:#fff; border:none; border-radius:8px; padding:12px; font-weight:700; font-size:14px; margin-bottom:14px; cursor:pointer;">Login with Deriv</button>
   <div class="symbol-row">
     <select class="symbol-select" id="symbolSelect" onchange="onSymbolChange()">
       <optgroup label="Volatility Indices">
@@ -939,6 +940,53 @@
   }
 
   updateStats();
+
+  // ---------------- DERIV OAUTH LOGIN ----------------
+  const DERIV_CLIENT_ID = "34dOXKmoe0wMGmp2uin91";
+  const DERIV_REDIRECT_URI = "https://jupiter-fx.onrender.com/callback";
+
+  function base64url(bytes) {
+    return btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  async function loginWithDeriv() {
+    const verifierBytes = crypto.getRandomValues(new Uint8Array(64));
+    const codeVerifier = Array.from(verifierBytes)
+      .map(v => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"[v % 66])
+      .join("");
+
+    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(codeVerifier));
+    const codeChallenge = base64url(new Uint8Array(hash));
+
+    const stateBytes = crypto.getRandomValues(new Uint8Array(16));
+    const state = Array.from(stateBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+
+    sessionStorage.setItem("pkce_code_verifier", codeVerifier);
+    sessionStorage.setItem("oauth_state", state);
+
+    const authUrl = "https://auth.deriv.com/oauth2/auth"
+      + "?response_type=code"
+      + "&client_id=" + DERIV_CLIENT_ID
+      + "&redirect_uri=" + encodeURIComponent(DERIV_REDIRECT_URI)
+      + "&scope=" + encodeURIComponent("trade account_manage")
+      + "&state=" + state
+      + "&code_challenge=" + codeChallenge
+      + "&code_challenge_method=S256";
+
+    window.location.href = authUrl;
+  }
+
+  // Reflect logged-in state on the button if a token already exists
+  (function checkLoginState() {
+    const token = sessionStorage.getItem("deriv_access_token");
+    const btn = document.getElementById("derivLoginBtn");
+    if (token && btn) {
+      btn.textContent = "✓ Connected to Deriv";
+      btn.style.background = "#2ecc71";
+      btn.style.color = "#0d0f14";
+    }
+  })();
 </script>
 
 </body>
