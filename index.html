@@ -261,6 +261,14 @@
       </div>
     </div>
   </div>
+  <div id="debugPanel" style="display:none; background:#1a1d26; border:1px solid #2a2e3a; border-radius:8px; padding:10px; margin-top:8px; font-size:11px; color:#9aa0aa; white-space:pre-wrap; word-break:break-all; max-height:300px; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+      <strong style="color:#e6e6e6;">Debug: raw Deriv response</strong>
+      <button onclick="document.getElementById('debugPanel').style.display='none'" style="background:none;border:none;color:#e8544f;font-weight:700;">✕ close</button>
+    </div>
+    <div id="debugContent">No data yet — tap Real or Demo above.</div>
+    </div>
+  </div>
 
   <div class="heading">ELITE ANALYSIS</div>
 
@@ -687,6 +695,12 @@ try {
         headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
       });
       const accountsData = await accountsRes.json();
+      const debugPanel = document.getElementById("debugPanel");
+      const debugContent = document.getElementById("debugContent");
+      if (debugPanel && debugContent) {
+        debugPanel.style.display = "block";
+        debugContent.textContent = "GET /accounts -> status " + accountsRes.status + "\n\n" + JSON.stringify(accountsData, null, 2);
+      }
       const accounts = accountsData.data || accountsData;
       if (!accounts || !accounts.length) return;
       const match = accounts.find(a => (accountType === "demo" ? (a.is_virtual || a.type === "demo") : (!a.is_virtual && a.type !== "demo")));
@@ -699,6 +713,10 @@ try {
         method: "POST", headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
       });
       const otpData = await otpRes.json();
+      const debugContent2 = document.getElementById("debugContent");
+      if (debugContent2) {
+        debugContent2.textContent += "\n\nPOST /accounts/" + match.account_id + "/otp -> status " + otpRes.status + "\n\n" + JSON.stringify(otpData, null, 2);
+      }
       const wsUrl = otpData.data && otpData.data.url;
       if (!wsUrl) return;
       if (authSocket) { try { authSocket.close(); } catch (e) {} }
