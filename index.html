@@ -725,11 +725,15 @@ try {
       authSocket.onmessage = (event) => {
         let data; try { data = JSON.parse(event.data); } catch (e) { return; }
         if (data.msg_type === "balance" && data.balance) {
-          const bal = data.balance.balance.toFixed(2) + " " + data.balance.currency;
+          const rawBal = data.balance.balance;
+          const bal = rawBal.toFixed(2) + " " + data.balance.currency;
+          if (accountType === "demo") demoBalance = rawBal; else realBalance = rawBal;
           const targetId = accountType === "demo" ? "ddDemoBal" : "ddRealBal";
           document.getElementById(targetId).textContent = bal;
-          if (activeAccountType === accountType) document.getElementById("acctBtnBalance").textContent = bal;
-          document.getElementById("runBalance").textContent = bal;
+          if (activeAccountType === accountType) {
+            document.getElementById("acctBtnBalance").textContent = bal;
+            document.getElementById("runBalance").textContent = bal;
+          }
         }
       };
     } catch (e) { console.warn("Auth account error:", e); }
@@ -743,12 +747,28 @@ try {
   function openTradeSheet() { document.getElementById("tradeOverlay").classList.add("open"); }
   function closeTradeSheet() { document.getElementById("tradeOverlay").classList.remove("open"); }
   function placeManualTrade(direction) {
-    const stake = parseFloat(document.getElementById("manualStake").value) || 1;
     const fb = document.getElementById("tradeFeedback");
+
+    // Real-money trading isn't wired to Deriv's actual "buy" API yet — block it
+    // rather than fake a trade against real funds.
+    if (activeAccountType === "real") {
+      fb.textContent = "⚠️ Real-account trading isn't connected to Deriv's buy API yet. Switch to Demo to test.";
+      fb.style.color = "#e8544f";
+      return;
+    }
+
+    const stake = parseFloat(document.getElementById("manualStake").value) || 1;
+
+    if (stake > demoBalance) {
+      fb.textContent = "⚠️ Insufficient balance. Demo balance: " + fmt(demoBalance) + " USD";
+      fb.style.color = "#e8544f";
+      return;
+    }
+
+    fb.style.color = "";
     const entry = latestRealPrice !== null ? latestRealPrice : basePrice;
     fb.textContent = "Placing " + direction.toUpperCase() + " trade at " + entry.toFixed(4) + "…";
-    // NOTE: still a local simulation of outcome/balance — real money movement
-    // needs Deriv's authenticated "buy" WebSocket call, not yet wired in.
+
     setTimeout(() => {
       const digit = latestRealDigit !== null ? latestRealDigit : randomDigit();
       const won = direction === "over" ? digit > prediction : digit < prediction;
@@ -756,7 +776,7 @@ try {
       const payout = won ? stake * PAYOUT_RATIO : 0;
 
       totalStake += stake; totalPayout += payout; runsCount += 1;
-      if (won) { contractsWon++; balance += (payout - stake); } else { contractsLost++; balance -= stake; }
+      if (won) { contractsWon++; demoBalance += (payout - stake); } else { contractsLost++; demoBalance -= stake; }
 
       pushTradeRow(entry, exit, stake, won);
       updateStats();
@@ -766,9 +786,10 @@ try {
     }, 1500);
   }
 
-  // Reflects the locally-tracked balance onto whichever account pill is active
+  // Reflects the correct per-account balance — never mixes Real and Demo numbers
   function updateAccountBalanceDisplay() {
-    const balStr = fmt(balance) + " USD";
+    const bal = activeAccountType === "demo" ? demoBalance : realBalance;
+    const balStr = fmt(bal) + " USD";
     const targetId = activeAccountType === "demo" ? "ddDemoBal" : "ddRealBal";
     document.getElementById(targetId).textContent = balStr;
     document.getElementById("acctBtnBalance").textContent = balStr;
@@ -782,7 +803,8 @@ try {
   let runTimer = null;
   let progressTimer = null;
   let basePrice = 98.4207;
-  let balance = 10000.00;
+  let demoBalance = 10000.00;
+  let realBalance = 0.00; // populated from Deriv's real balance once fetched
   let totalStake = 0, totalPayout = 0, runsCount = 0, contractsLost = 0, contractsWon = 0;
   const STAKE = 0.35;
   const PAYOUT_RATIO = 1.9;
@@ -813,6 +835,11 @@ try {
   }
   function runOneContract() {
     if (!running) return;
+    if (activeAccountType === "real") {
+      document.getElementById("statusText").textContent = "Real trading not connected — switch to Demo";
+      toggleBot(); // auto-stop
+      return;
+    }
     const statusEls = [document.getElementById("runStatusText"), document.getElementById("statusText")];
     const progressEl = document.getElementById("runProgress");
     statusEls.forEach(el => el.textContent = "Contract bought");
@@ -830,7 +857,7 @@ try {
       const won = evaluateWin(digit);
       const payout = won ? STAKE * PAYOUT_RATIO : 0;
       totalStake += STAKE; totalPayout += payout; runsCount += 1;
-      if (won) { contractsWon++; balance += (payout - STAKE); } else { contractsLost++; balance -= STAKE; }
+      if (won) { contractsWon++; demoBalance += (payout - STAKE); } else { contractsLost++; demoBalance -= STAKE; }
       pushTradeRow(entrySpot, exitSpot, STAKE, won);
       updateStats();
       updateAccountBalanceDisplay();
