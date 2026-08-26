@@ -1048,26 +1048,45 @@
     if (el) { el.textContent = text; el.style.color = color || "#6b7280"; }
   }
 
-  let firstTickTimer = null;
+  let staleWatchdog = null;
+  let pingInterval = null;
+  const STALE_TIMEOUT_MS = 10000; // reconnect if no tick for 10s
+
+  function armStaleWatchdog() {
+    clearTimeout(staleWatchdog);
+    staleWatchdog = setTimeout(() => {
+      console.warn("No tick for " + STALE_TIMEOUT_MS + "ms — forcing reconnect.");
+      setWsStatus("⚠️ Feed went quiet — reconnecting…", "#e8544f");
+      forceReconnect();
+    }, STALE_TIMEOUT_MS);
+  }
+
+  function forceReconnect() {
+    clearInterval(pingInterval);
+    clearTimeout(staleWatchdog);
+    if (derivSocket) {
+      try { derivSocket.onclose = null; derivSocket.close(); } catch (e) {}
+    }
+    connectDerivSocket();
+  }
 
   function connectDerivSocket() {
-    if (derivSocket) {
-      try { derivSocket.close(); } catch (e) {}
-    }
     setWsStatus("🔌 Connecting to Deriv…", "#9aa0aa");
-    updatePrice("Connecting…");
 
     derivSocket = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=" + DERIV_APP_ID);
 
     derivSocket.onopen = () => {
       setWsStatus("✅ Socket open — requesting ticks…", "#2ecc71");
       subscribeToTicks(currentSymbol);
+      armStaleWatchdog();
 
-      clearTimeout(firstTickTimer);
-      firstTickTimer = setTimeout(() => {
-        setWsStatus("⚠️ No ticks received yet — retrying…", "#e8544f");
-        console.warn("No tick received within 8s for symbol:", currentSymbol);
-      }, 8000);
+      // Keep the connection alive — some mobile networks silently drop idle sockets
+      clearInterval(pingInterval);
+      pingInterval = setInterval(() => {
+        if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
+          derivSocket.send(JSON.stringify({ ping: 1 }));
+        }
+      }, 20000);
     };
 
     derivSocket.onmessage = (event) => {
@@ -1075,7 +1094,7 @@
       console.log("WS message:", data.msg_type, data);
 
       if (data.msg_type === "tick" && data.tick) {
-        clearTimeout(firstTickTimer);
+        armStaleWatchdog(); // reset the clock — we just heard from the server
         const quote = data.tick.quote;
         const quoteStr = quote.toString();
         const lastDigit = parseInt(quoteStr.slice(-1), 10);
@@ -1109,6 +1128,8 @@
     derivSocket.onclose = (event) => {
       console.warn("WS closed:", event.code, event.reason);
       setWsStatus("🔌 Disconnected — reconnecting…", "#e8544f");
+      clearInterval(pingInterval);
+      clearTimeout(staleWatchdog);
       clearTimeout(wsReconnectTimer);
       wsReconnectTimer = setTimeout(connectDerivSocket, 3000);
     };
