@@ -257,7 +257,9 @@
       </div>
       <div class="acct-dropdown" id="acctDropdown">
         <button class="acct-option" onclick="chooseAccount('demo')"><span>🎮 Demo</span><span id="ddDemoBal">10000.00 USD</span></button>
+        <div id="ddDemoStatus" style="font-size:10px; color:var(--muted); padding:0 8px 6px;">connecting…</div>
         <button class="acct-option" onclick="chooseAccount('real')"><span>🇺🇸 Real</span><span id="ddRealBal">— USD</span></button>
+        <div id="ddRealStatus" style="font-size:10px; color:var(--muted); padding:0 8px 6px;">connecting…</div>
       </div>
     </div>
   </div>
@@ -687,13 +689,30 @@ try {
 
   // ---------------- AUTHENTICATED BALANCE (OTP flow) ----------------
   let authSockets = { demo: null, real: null }; // one live authenticated socket per account
+  let authStatus = { demo: "idle", real: "idle" }; // idle | connecting | connected | failed
+
+  function setAcctStatus(type, status, detail) {
+    authStatus[type] = status;
+    const el = document.getElementById(type === "demo" ? "ddDemoStatus" : "ddRealStatus");
+    if (!el) return;
+    const labels = {
+      idle: "not connected",
+      connecting: "connecting…",
+      connected: "✅ connected",
+      failed: "⚠️ " + (detail || "connection failed")
+    };
+    el.textContent = labels[status] || status;
+    el.style.color = status === "connected" ? "#2ecc71" : status === "failed" ? "#e8544f" : "var(--muted)";
+  }
   async function connectAuthenticatedAccount(accountType) {
     const token = localStorage.getItem("deriv_access_token");
-    if (!token) return;
+    if (!token) { setAcctStatus(accountType, "failed", "not logged in"); return; }
+    setAcctStatus(accountType, "connecting");
     try {
       const accountsRes = await fetch(DERIV_REST_BASE + "/accounts", {
         headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
       });
+      if (!accountsRes.ok) { setAcctStatus(accountType, "failed", "accounts fetch " + accountsRes.status); return; }
       const accountsData = await accountsRes.json();
       const debugPanel = document.getElementById("debugPanel");
       const debugContent = document.getElementById("debugContent");
@@ -702,23 +721,25 @@ try {
         debugContent.textContent = "GET /accounts -> status " + accountsRes.status + "\n\n" + JSON.stringify(accountsData, null, 2);
       }
       const accounts = accountsData.data || accountsData;
-      if (!accounts || !accounts.length) return;
+      if (!accounts || !accounts.length) { setAcctStatus(accountType, "failed", "no accounts returned"); return; }
       const match = accounts.find(a => a.account_type === accountType);
       if (!match) {
         const targetId = accountType === "demo" ? "ddDemoBal" : "ddRealBal";
-        document.getElementById(targetId).textContent = "No " + accountType + " account found";
+        document.getElementById(targetId).textContent = "—";
+        setAcctStatus(accountType, "failed", "no " + accountType + " account on this login");
         return;
       }
       const otpRes = await fetch(DERIV_REST_BASE + "/accounts/" + match.account_id + "/otp", {
         method: "POST", headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
       });
+      if (!otpRes.ok) { setAcctStatus(accountType, "failed", "otp request " + otpRes.status); return; }
       const otpData = await otpRes.json();
       const debugContent2 = document.getElementById("debugContent");
       if (debugContent2) {
         debugContent2.textContent += "\n\nPOST /accounts/" + match.account_id + "/otp -> status " + otpRes.status + "\n\n" + JSON.stringify(otpData, null, 2);
       }
       const wsUrl = otpData.data && otpData.data.url;
-      if (!wsUrl) return;
+      if (!wsUrl) { setAcctStatus(accountType, "failed", "no otp url in response"); return; }
       if (authSocket) { try { authSocket.close(); } catch (e) {} }
       authSocket = new WebSocket(wsUrl);
       authSocket.onopen = () => authSocket.send(JSON.stringify({ balance: 1, subscribe: 1 }));
@@ -736,7 +757,10 @@ try {
           }
         }
       };
-    } catch (e) { console.warn("Auth account error:", e); }
+    } catch (e) {
+      console.warn("Auth account error:", e);
+      setAcctStatus(accountType, "failed", "network error");
+    }
   }
   if (localStorage.getItem("deriv_access_token")) {
     connectAuthenticatedAccount("demo");
@@ -748,14 +772,20 @@ try {
   function closeTradeSheet() { document.getElementById("tradeOverlay").classList.remove("open"); }
   let pendingTradeRow = null; // trade row awaiting a real outcome from Deriv
 
-  function placeManualTrade(direction) {
+  async function placeManualTrade(direction) {
     const fb = document.getElementById("tradeFeedback");
-    const sock = authSockets[activeAccountType];
+    let sock = authSockets[activeAccountType];
 
     if (!sock || sock.readyState !== WebSocket.OPEN) {
-      fb.textContent = "⚠️ Not authenticated on this account yet — reselect it from the account menu.";
-      fb.style.color = "#e8544f";
-      return;
+      fb.textContent = "Reconnecting to " + activeAccountType + " account…";
+      fb.style.color = "";
+      await connectAuthenticatedAccount(activeAccountType);
+      sock = authSockets[activeAccountType];
+      if (!sock || sock.readyState !== WebSocket.OPEN) {
+        fb.textContent = "⚠️ Could not authenticate " + activeAccountType + " account. Check status in the account menu (top right).";
+        fb.style.color = "#e8544f";
+        return;
+      }
     }
 
     const stake = parseFloat(document.getElementById("manualStake").value) || 1;
