@@ -712,6 +712,11 @@ try {
       const accountsRes = await fetch(DERIV_REST_BASE + "/accounts", {
         headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
       });
+      if (accountsRes.status === 401) {
+        setAcctStatus(accountType, "failed", "session expired — please log in again");
+        localStorage.removeItem("deriv_access_token");
+        return;
+      }
       if (!accountsRes.ok) { setAcctStatus(accountType, "failed", "accounts fetch " + accountsRes.status); return; }
       const accountsData = await accountsRes.json();
       const debugPanel = document.getElementById("debugPanel");
@@ -759,7 +764,7 @@ try {
       };
     } catch (e) {
       console.warn("Auth account error:", e);
-      setAcctStatus(accountType, "failed", "network error");
+      setAcctStatus(accountType, "failed", e.message || "network error");
     }
   }
   if (localStorage.getItem("deriv_access_token")) {
