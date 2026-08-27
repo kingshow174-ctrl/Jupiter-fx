@@ -6,115 +6,46 @@
 <title>Jupiter FX</title>
 <style>
   :root {
-    --bg: #0d0f14;
-    --panel: #12151c;
-    --border: #23262f;
-    --text: #e6e6e6;
-    --muted: #9aa0aa;
-    --green: #2ecc71;
-    --red: #e8544f;
-    --blue: #3d9bf5;
-    --teal: #1fc7c3;
+    --bg: #0d0f14; --panel: #12151c; --border: #23262f; --text: #e6e6e6;
+    --muted: #9aa0aa; --green: #2ecc71; --red: #e8544f; --blue: #3d9bf5; --teal: #1fc7c3;
   }
-  body.light {
-    --bg: #f2f3f6;
-    --panel: #ffffff;
-    --border: #dfe2e8;
-    --text: #1a1d26;
-    --muted: #6b7280;
-  }
+  body.light { --bg: #f2f3f6; --panel: #ffffff; --border: #dfe2e8; --text: #1a1d26; --muted: #6b7280; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, Roboto, sans-serif;
-    padding: 0 12px 110px;
-    transition: background 0.2s, color 0.2s;
-  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, Roboto, sans-serif; padding: 0 12px 110px; }
   .wrap { max-width: 420px; margin: 0 auto; }
 
-  /* ---- Sticky top account bar ---- */
-  .account-bar-sticky {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg);
-    padding: 10px 0 8px;
-  }
-  .account-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    position: relative;
-  }
+  .account-bar-sticky { position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 10px 0 8px; }
+  .account-bar { display: flex; align-items: center; justify-content: space-between; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; position: relative; gap: 8px; flex-wrap: wrap; }
   .brand { display: flex; align-items: center; gap: 8px; }
   .brand-icon { font-size: 22px; }
   .brand-name { font-weight: 800; font-size: 16px; letter-spacing: 0.5px; }
   .bar-right { display: flex; align-items: center; gap: 8px; }
-  .theme-btn {
-    background: #1a1d26; color: var(--muted); border: 1px solid var(--border);
-    border-radius: 8px; width: 34px; height: 34px; font-size: 15px; cursor: pointer;
-  }
-  .acct-btn {
-    background: var(--green); color: #0d0f14; border: none; border-radius: 8px;
-    padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .acct-dropdown {
-    display: none;
-    position: absolute;
-    top: 52px; right: 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px;
-    z-index: 110;
-    min-width: 180px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-  }
+  .theme-btn { background: #1a1d26; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; font-size: 15px; cursor: pointer; }
+  .login-btn { background: #1a1d26; border: 1px solid var(--border); border-radius: 8px; height: 34px; padding: 0 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .acct-btn { background: var(--green); color: #0d0f14; border: none; border-radius: 8px; padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .acct-dropdown { display: none; position: absolute; top: 52px; right: 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 8px; z-index: 110; min-width: 220px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
   .acct-dropdown.open { display: block; }
-  .acct-option {
-    width: 100%; text-align: left; background: none; border: none; color: var(--text);
-    padding: 10px 8px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer;
-    display: flex; justify-content: space-between; align-items: center;
-  }
+  .acct-option { width: 100%; text-align: left; background: none; border: none; color: var(--text); padding: 10px 8px 2px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
   .acct-option:active, .acct-option:hover { background: #1a1d26; }
-  .acct-option span:first-child { white-space: nowrap; }
-  .acct-option span:last-child { text-align: right; margin-left: 12px; }
+  .acct-status { font-size: 10px; color: var(--muted); padding: 0 8px 8px; }
 
-  .heading {
-    text-align: center; background: var(--panel); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px; font-size: 16px; font-weight: 700;
-    letter-spacing: 1px; margin-bottom: 14px;
-  }
+  #debugPanel { display: none; background: #1a1d26; border: 1px solid #2a2e3a; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: var(--muted); white-space: pre-wrap; word-break: break-all; max-height: 260px; overflow-y: auto; }
+  #debugPanel .dbg-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+
+  .heading { text-align: center; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 16px; font-weight: 700; letter-spacing: 1px; margin-bottom: 14px; }
   .symbol-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
-  .symbol-select {
-    flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    padding: 12px; text-align: center; text-align-last: center; font-size: 15px; font-weight: 600;
-    color: var(--text); -webkit-appearance: none; appearance: none;
-  }
+  .symbol-select { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; text-align-last: center; font-size: 15px; font-weight: 600; color: var(--text); -webkit-appearance: none; appearance: none; }
   .price-label { font-size: 13px; color: var(--muted); margin-right: 6px; }
   .price-box { background: var(--green); color: #0d0f14; font-weight: 800; font-size: 16px; padding: 10px 16px; border-radius: 6px; white-space: nowrap; }
   .price-wrap { display: flex; align-items: center; }
 
   .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
-  .tab-btn {
-    flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    padding: 10px 4px; text-align: center; font-size: 12px; font-weight: 700; color: var(--muted);
-    cursor: pointer; letter-spacing: 0.5px;
-  }
+  .tab-btn { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 4px; text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; letter-spacing: 0.5px; }
   .tab-btn.active { background: var(--teal); color: #0d0f14; border-color: var(--teal); }
 
   .prediction-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
   .prediction-label { font-size: 15px; color: var(--muted); }
-  .prediction-select {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px;
-    font-size: 16px; font-weight: 700; color: var(--text); min-width: 56px; text-align: center; text-align-last: center;
-  }
+  .prediction-select { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; font-size: 16px; font-weight: 700; color: var(--text); min-width: 56px; text-align: center; text-align-last: center; }
 
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 10px; margin-bottom: 20px; }
   .card-title { text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
@@ -122,16 +53,11 @@
   .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
   .tile { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 14px; color: #0d0f14; }
   .O { background: var(--green); } .U { background: var(--red); } .S { background: var(--blue); }
-  .E { background: var(--green); } .D { background: var(--red); }
-  .M { background: var(--blue); } .X { background: #6b7280; }
+  .E { background: var(--green); } .D { background: var(--red); } .M { background: var(--blue); } .X { background: #6b7280; }
 
   .card-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
   .card-title-sm { font-size: 17px; font-weight: 700; }
-  .badge-select {
-    background: #1a1d26; border: 1px solid #2a2e3a; border-radius: 6px; padding: 6px 10px; font-weight: 700;
-    font-size: 14px; color: var(--text); text-align: center; text-align-last: center; -webkit-appearance: none;
-    appearance: none; cursor: pointer;
-  }
+  .badge-select { background: #1a1d26; border: 1px solid #2a2e3a; border-radius: 6px; padding: 6px 10px; font-weight: 700; font-size: 14px; color: var(--text); text-align: center; text-align-last: center; -webkit-appearance: none; appearance: none; cursor: pointer; }
   .bar-row { margin-bottom: 22px; }
   .bar-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .bar-track { background: #1a1d26; border-radius: 4px; height: 40px; position: relative; overflow: hidden; }
@@ -139,13 +65,9 @@
   .fill-a { background: var(--green); } .fill-b { background: var(--red); color: #fff; } .fill-c { background: var(--blue); }
   .scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-  /* ---- Digit circles 0-9 ---- */
   .circles-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px 8px; }
   .circle-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .circle {
-    width: 56px; height: 56px; border-radius: 50%; border: 3px solid #444a58; background: #1a1d26;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
+  .circle { width: 56px; height: 56px; border-radius: 50%; border: 3px solid #444a58; background: #1a1d26; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .circle .digit { font-weight: 800; font-size: 16px; color: var(--text); }
   .circle .pct { font-size: 10px; color: var(--muted); }
   .circle.highest { border-color: var(--green); }
@@ -160,7 +82,7 @@
   .runbar-inner { max-width: 420px; margin: 0 auto; }
   .disclaimer-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .disclaimer-btn { background: var(--green); color: #0d0f14; font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 6px; border: none; }
-  .caret-btn { background: #1a1d26; color: var(--muted); border: 1px solid #2a2e3a; border-radius: 6px; width: 34px; height: 34px; font-size: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+  .caret-btn { background: #1a1d26; color: var(--muted); border: 1px solid #2a2e3a; border-radius: 6px; width: 34px; height: 34px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .run-status-row { display: flex; align-items: center; gap: 10px; }
   .run-btn { background: var(--teal); color: #0d0f14; font-weight: 800; font-size: 15px; padding: 14px 20px; border-radius: 8px; border: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer; min-width: 90px; justify-content: center; }
   .run-btn.stopping { background: var(--red); color: #fff; }
@@ -168,43 +90,23 @@
   .status-dot { width: 8px; height: 8px; background: #6b7280; border-radius: 50%; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
   .status-dot.won { background: var(--green); }
 
-  /* ---- Manual trade overlay (fixed, non-scrollable sheet) ---- */
-  .trade-fab {
-    position: fixed; right: 16px; bottom: 90px; z-index: 95;
-    background: var(--teal); color: #0d0f14; border: none; border-radius: 50%;
-    width: 54px; height: 54px; font-size: 22px; font-weight: 800; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-  }
-  .trade-overlay {
-    display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.55);
-    align-items: flex-end; justify-content: center;
-  }
+  .trade-fab { position: fixed; right: 16px; bottom: 90px; z-index: 95; background: var(--teal); color: #0d0f14; border: none; border-radius: 50%; width: 54px; height: 54px; font-size: 22px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+  .trade-overlay { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.55); align-items: flex-end; justify-content: center; }
   .trade-overlay.open { display: flex; }
-  .trade-sheet {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 16px 16px 0 0;
-    width: 100%; max-width: 420px; padding: 18px 16px 22px; overflow: hidden;
-  }
+  .trade-sheet { background: var(--panel); border: 1px solid var(--border); border-radius: 16px 16px 0 0; width: 100%; max-width: 420px; padding: 18px 16px 22px; overflow: hidden; }
   .trade-sheet-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
   .trade-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
   .trade-field { margin-bottom: 14px; }
   .trade-field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
-  .trade-field input {
-    width: 100%; background: #1a1d26; border: 1px solid var(--border); border-radius: 8px;
-    padding: 10px 12px; color: var(--text); font-size: 14px; font-weight: 600;
-  }
+  .trade-field input { width: 100%; background: #1a1d26; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; font-weight: 600; }
   .trade-buy-row { display: flex; gap: 10px; margin-top: 6px; }
-  .trade-buy-btn {
-    flex: 1; padding: 12px 10px; border-radius: 14px; border: none; cursor: pointer;
-    text-align: left; color: #fff;
-  }
+  .trade-buy-btn { flex: 1; padding: 12px 10px; border-radius: 14px; border: none; cursor: pointer; text-align: left; color: #fff; }
   .trade-buy-btn .tb-label { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13px; margin-bottom: 6px; }
   .trade-buy-btn .tb-payout-label { font-size: 10px; opacity: 0.85; }
   .trade-buy-btn .tb-payout-value { font-weight: 800; font-size: 13px; }
-  .buy-over { background: #17a672; }
-  .buy-under { background: #c23a4a; }
+  .buy-over { background: #17a672; } .buy-under { background: #c23a4a; }
   .trade-feedback { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 16px; }
 
-  /* ---- Run/history page ---- */
   #runPage { display: none; background: #f5f6f8; color: #1a1d26; position: fixed; inset: 0; z-index: 50; flex-direction: column; overflow: hidden; }
   .run-topbar { background: #ffffff; padding: 14px; display: flex; align-items: center; justify-content: flex-end; border-bottom: 1px solid #e2e4e8; flex-shrink: 0; }
   .run-balance { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
@@ -245,31 +147,26 @@
 
 <div class="wrap">
 
-  <!-- STICKY ACCOUNT BAR -->
   <div class="account-bar-sticky">
     <div class="account-bar">
       <div class="brand"><span class="brand-icon">🪐</span><span class="brand-name">Jupiter FX</span></div>
       <div class="bar-right">
         <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
-        <button class="theme-btn" id="loginLogoutBtn" onclick="handleLoginLogoutClick()" style="font-size:12px; font-weight:700; width:auto; padding:0 10px;">Login</button>
+        <button class="login-btn" id="loginLogoutBtn" onclick="handleLoginLogoutClick()">Login</button>
         <button class="acct-btn" id="acctBtn" onclick="toggleAcctDropdown()">
-          <span id="acctBtnIcon">🎮</span> <span id="acctBtnLabel">Demo</span> <span id="acctBtnBalance">10000.00 USD</span>
+          <span id="acctBtnIcon">🎮</span><span id="acctBtnLabel">Demo</span><span id="acctBtnBalance">10000.00 USD</span>
         </button>
       </div>
       <div class="acct-dropdown" id="acctDropdown">
         <button class="acct-option" onclick="chooseAccount('demo')"><span>🎮 Demo</span><span id="ddDemoBal">10000.00 USD</span></button>
-        <div id="ddDemoStatus" style="font-size:10px; color:var(--muted); padding:0 8px 6px;">connecting…</div>
+        <div class="acct-status" id="ddDemoStatus">not connected</div>
         <button class="acct-option" onclick="chooseAccount('real')"><span>🇺🇸 Real</span><span id="ddRealBal">— USD</span></button>
-        <div id="ddRealStatus" style="font-size:10px; color:var(--muted); padding:0 8px 6px;">connecting…</div>
+        <div class="acct-status" id="ddRealStatus">not connected</div>
       </div>
     </div>
-  </div>
-  <div id="debugPanel" style="display:none; background:#1a1d26; border:1px solid #2a2e3a; border-radius:8px; padding:10px; margin-top:8px; font-size:11px; color:#9aa0aa; white-space:pre-wrap; word-break:break-all; max-height:300px; overflow-y:auto;">
-    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-      <strong style="color:#e6e6e6;">Debug: raw Deriv response</strong>
-      <button onclick="document.getElementById('debugPanel').style.display='none'" style="background:none;border:none;color:#e8544f;font-weight:700;">✕ close</button>
-    </div>
-    <div id="debugContent">No data yet — tap Real or Demo above.</div>
+    <div id="debugPanel">
+      <div class="dbg-head"><strong style="color:var(--text);">Debug: raw Deriv response</strong><button onclick="document.getElementById('debugPanel').style.display='none'" style="background:none;border:none;color:#e8544f;font-weight:700;">✕ close</button></div>
+      <div id="debugContent">No data yet — log in, then tap Real or Demo above.</div>
     </div>
   </div>
 
@@ -336,16 +233,15 @@
         <option value="100" selected>100</option>
       </select>
     </div>
-    <div class="bar-row"><div class="bar-label" id="labelA">OVER <span id="valLabelA">3</span></div>
+    <div class="bar-row"><div class="bar-label" id="labelA">OVER <span>3</span></div>
       <div class="bar-track"><div class="bar-fill fill-a" id="barA" style="width:0%">0%</div></div></div>
-    <div class="bar-row"><div class="bar-label" id="labelB">UNDER <span id="valLabelB">3</span></div>
+    <div class="bar-row"><div class="bar-label" id="labelB">UNDER <span>3</span></div>
       <div class="bar-track"><div class="bar-fill fill-b" id="barB" style="width:0%">0%</div></div></div>
-    <div class="bar-row" id="rowC"><div class="bar-label" id="labelC">SAME <span id="valLabelC">3</span></div>
+    <div class="bar-row" id="rowC"><div class="bar-label" id="labelC">SAME <span>3</span></div>
       <div class="bar-track"><div class="bar-fill fill-c" id="barC" style="width:0%">0%</div></div></div>
     <div class="scale"><span>0</span><span>20</span><span>40</span><span>60</span></div>
   </div>
 
-  <!-- DIGIT CIRCLES 0-9 -->
   <div class="card">
     <div class="card-title-row"><div class="card-title-sm">DIGIT DISTRIBUTION</div><div class="badge-select" style="cursor:default;">100 ticks</div></div>
     <div class="circles-grid" id="circlesGrid"></div>
@@ -359,24 +255,18 @@
 
 </div>
 
-<!-- Manual trade FAB + overlay -->
 <button class="trade-fab" onclick="openTradeSheet()">⚡</button>
 <div class="trade-overlay" id="tradeOverlay" onclick="if(event.target===this) closeTradeSheet()">
   <div class="trade-sheet">
     <div class="trade-sheet-title">Manual Trade <button class="trade-close" onclick="closeTradeSheet()">✕</button></div>
     <div class="trade-field"><label>Stake (USD)</label><input type="number" id="manualStake" value="1" min="0.35" step="0.01"></div>
     <div class="trade-field"><label>Duration (ticks)</label><input type="number" id="manualDuration" value="5" min="1" step="1"></div>
-    <script>document.addEventListener("input", function(e){ if(e.target && e.target.id==="manualStake"){ var s=parseFloat(e.target.value)||0; var p=(s*1.9).toFixed(2); var a=document.getElementById("payoutOverPreview"); var b=document.getElementById("payoutUnderPreview"); if(a) a.textContent=p+" USD"; if(b) b.textContent=p+" USD"; } });</script>
     <div class="trade-buy-row">
       <button class="trade-buy-btn buy-over" onclick="placeManualTrade('over')">
-        <div class="tb-label">⚡ Over</div>
-        <div class="tb-payout-label">Payout</div>
-        <div class="tb-payout-value" id="payoutOverPreview">0.00 USD</div>
+        <div class="tb-label">⚡ Over</div><div class="tb-payout-label">Payout</div><div class="tb-payout-value" id="payoutOverPreview">0.00 USD</div>
       </button>
       <button class="trade-buy-btn buy-under" onclick="placeManualTrade('under')">
-        <div class="tb-label">⚡ Under</div>
-        <div class="tb-payout-label">Payout</div>
-        <div class="tb-payout-value" id="payoutUnderPreview">0.00 USD</div>
+        <div class="tb-label">⚡ Under</div><div class="tb-payout-label">Payout</div><div class="tb-payout-value" id="payoutUnderPreview">0.00 USD</div>
       </button>
     </div>
     <div class="trade-feedback" id="tradeFeedback"></div>
@@ -386,7 +276,7 @@
 <div class="runbar-wrap" id="mainRunbar">
   <div class="runbar-inner">
     <div class="disclaimer-row">
-      <button class="caret-btn" id="showHistoryBtn" style="display:flex;" onclick="showHistoryView()">▲</button>
+      <button class="caret-btn" onclick="showHistoryView()">▲</button>
       <span></span>
       <button class="disclaimer-btn">Risk Disclaimer</button>
     </div>
@@ -401,7 +291,7 @@
   <div class="run-topbar"><div class="run-balance"><span id="runBalance">10,000.00 USD</span><span class="demo-tag" id="runAcctTag">Demo</span></div></div>
   <div class="run-collapse-row">
     <span style="width:34px;"></span>
-    <button class="caret-btn" style="display:flex;" onclick="hideHistoryView()">▼</button>
+    <button class="caret-btn" onclick="hideHistoryView()">▼</button>
     <button class="run-reset-btn" id="resetBtn" onclick="resetHistory()">Reset</button>
   </div>
   <div class="run-tabs">
@@ -439,37 +329,101 @@ try {
   // ---------------- THEME ----------------
   function toggleTheme() {
     document.body.classList.toggle("light");
-    const btn = document.getElementById("themeBtn");
-    btn.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+    document.getElementById("themeBtn").textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
     localStorage.setItem("jfx_theme", document.body.classList.contains("light") ? "light" : "dark");
   }
-  if (localStorage.getItem("jfx_theme") === "light") {
-    document.body.classList.add("light");
-    document.addEventListener("DOMContentLoaded", () => { document.getElementById("themeBtn").textContent = "☀️"; });
+  if (localStorage.getItem("jfx_theme") === "light") document.body.classList.add("light");
+
+  // ---------------- LOGIN / LOGOUT ----------------
+  const DERIV_CLIENT_ID = "34dOXKmoe0wMGmp2uin91";
+  const DERIV_REDIRECT_URI = "https://jupiter-fx.onrender.com/callback";
+
+  function base64url(bytes) {
+    return btoa(String.fromCharCode(...bytes)).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/, "");
   }
+
+  async function loginWithDeriv() {
+    const verifierBytes = crypto.getRandomValues(new Uint8Array(64));
+    const codeVerifier = Array.from(verifierBytes).map(v => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"[v % 66]).join("");
+    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(codeVerifier));
+    const codeChallenge = base64url(new Uint8Array(hash));
+    const stateBytes = crypto.getRandomValues(new Uint8Array(16));
+    const state = Array.from(stateBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+
+    localStorage.setItem("pkce_code_verifier", codeVerifier);
+    localStorage.setItem("oauth_state", state);
+
+    const authUrl = "https://auth.deriv.com/oauth2/auth"
+      + "?response_type=code&client_id=" + DERIV_CLIENT_ID
+      + "&redirect_uri=" + encodeURIComponent(DERIV_REDIRECT_URI)
+      + "&scope=" + encodeURIComponent("trade account_manage")
+      + "&state=" + state
+      + "&code_challenge=" + codeChallenge
+      + "&code_challenge_method=S256";
+    window.location.href = authUrl;
+  }
+
+  function logoutFromDeriv() {
+    localStorage.removeItem("deriv_access_token");
+    localStorage.removeItem("pkce_code_verifier");
+    localStorage.removeItem("oauth_state");
+    Object.keys(authSockets).forEach(type => {
+      if (authSockets[type]) { try { authSockets[type].close(); } catch (e) {} }
+      authSockets[type] = null;
+      setAcctStatus(type, "idle");
+    });
+    demoBalance = 10000.00; realBalance = 0.00;
+    document.getElementById("ddDemoBal").textContent = "10000.00 USD";
+    document.getElementById("ddRealBal").textContent = "— USD";
+    document.getElementById("acctBtnBalance").textContent = "10000.00 USD";
+    document.getElementById("runBalance").textContent = "10000.00 USD";
+    refreshLoginButtonVisibility();
+    const fb = document.getElementById("tradeFeedback");
+    if (fb) { fb.textContent = "Logged out."; fb.style.color = "var(--muted)"; }
+  }
+
+  function handleLoginLogoutClick() {
+    if (localStorage.getItem("deriv_access_token")) logoutFromDeriv();
+    else loginWithDeriv();
+  }
+
+  function refreshLoginButtonVisibility() {
+    const token = localStorage.getItem("deriv_access_token");
+    const btn = document.getElementById("loginLogoutBtn");
+    if (!btn) return;
+    btn.textContent = token ? "Logout" : "Login";
+    btn.style.color = token ? "#e8544f" : "#2ecc71";
+  }
+  refreshLoginButtonVisibility();
+  setInterval(refreshLoginButtonVisibility, 3000);
 
   // ---------------- ACCOUNT SWITCHER ----------------
   let activeAccountType = "demo";
-  function toggleAcctDropdown() {
-    document.getElementById("acctDropdown").classList.toggle("open");
-  }
+  function toggleAcctDropdown() { document.getElementById("acctDropdown").classList.toggle("open"); }
   function chooseAccount(type) {
     activeAccountType = type;
     document.getElementById("acctDropdown").classList.remove("open");
     document.getElementById("acctBtnIcon").textContent = type === "demo" ? "🎮" : "🇺🇸";
     document.getElementById("acctBtnLabel").textContent = type === "demo" ? "Demo" : "Real";
     document.getElementById("runAcctTag").textContent = type === "demo" ? "Demo" : "Real";
-    const balSpan = document.getElementById(type === "demo" ? "ddDemoBal" : "ddRealBal").textContent;
-    document.getElementById("acctBtnBalance").textContent = balSpan;
+    document.getElementById("acctBtnBalance").textContent = document.getElementById(type === "demo" ? "ddDemoBal" : "ddRealBal").textContent;
     connectAuthenticatedAccount(type);
   }
   document.addEventListener("click", (e) => {
     const dd = document.getElementById("acctDropdown");
     const btn = document.getElementById("acctBtn");
-    if (dd.classList.contains("open") && !dd.contains(e.target) && !btn.contains(e.target)) {
-      dd.classList.remove("open");
-    }
+    if (dd.classList.contains("open") && !dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove("open");
   });
+
+  let authStatus = { demo: "idle", real: "idle" };
+  function setAcctStatus(type, status, detail) {
+    authStatus[type] = status;
+    const el = document.getElementById(type === "demo" ? "ddDemoStatus" : "ddRealStatus");
+    if (!el) return;
+    const labels = { idle: "not connected", connecting: "connecting…", connected: "✅ connected", failed: "⚠️ " + (detail || "failed") };
+    el.textContent = labels[status] || status;
+    el.style.color = status === "connected" ? "#2ecc71" : status === "failed" ? "#e8544f" : "var(--muted)";
+  }
 
   // ---------------- ANALYSIS DATA ----------------
   const sampleDigits = [
@@ -482,11 +436,9 @@ try {
   let currentMode = "overunder";
   let prediction = 3;
   let sampleSize = 100;
-
   const grid = document.getElementById("ldpGrid");
   function getGridDigits() { return sampleDigits.slice(-GRID_TILE_COUNT); }
   function getStatsDigits() { return sampleDigits.slice(-sampleSize); }
-
   function classifyOverUnder(d, p) { if (d > p) return "O"; if (d < p) return "U"; return "S"; }
   function classifyEvenOdd(d) { return (d % 2 === 0) ? "E" : "D"; }
   function classifyMatchesDiffers(d, p) { return (d === p) ? "M" : "X"; }
@@ -499,30 +451,24 @@ try {
       else if (currentMode === "evenodd") cls = classifyEvenOdd(d);
       else cls = classifyMatchesDiffers(d, prediction);
       const div = document.createElement("div");
-      div.className = "tile " + cls;
-      div.textContent = cls;
+      div.className = "tile " + cls; div.textContent = cls;
       grid.appendChild(div);
     });
   }
-
   function computeStats() {
-    const digits = getStatsDigits();
-    const total = digits.length || 1;
+    const digits = getStatsDigits(); const total = digits.length || 1;
     if (currentMode === "overunder") {
       let o=0,u=0,s=0;
       digits.forEach(d => { if (d > prediction) o++; else if (d < prediction) u++; else s++; });
       return { aPct: Math.round(o/total*100), bPct: Math.round(u/total*100), cPct: Math.round(s/total*100), hasThird: true };
     } else if (currentMode === "evenodd") {
-      let e=0,o=0;
-      digits.forEach(d => { if (d % 2 === 0) e++; else o++; });
+      let e=0,o=0; digits.forEach(d => { if (d % 2 === 0) e++; else o++; });
       return { aPct: Math.round(e/total*100), bPct: Math.round(o/total*100), cPct:0, hasThird:false };
     } else {
-      let m=0,x=0;
-      digits.forEach(d => { if (d === prediction) m++; else x++; });
+      let m=0,x=0; digits.forEach(d => { if (d === prediction) m++; else x++; });
       return { aPct: Math.round(m/total*100), bPct: Math.round(x/total*100), cPct:0, hasThird:false };
     }
   }
-
   function renderBars() {
     const { aPct, bPct, cPct, hasThird } = computeStats();
     const barA = document.getElementById("barA"), barB = document.getElementById("barB"), barC = document.getElementById("barC");
@@ -531,145 +477,84 @@ try {
     barB.style.width = Math.min(bPct,60)/60*100 + "%"; barB.textContent = bPct + "%";
     if (hasThird) { rowC.style.display = "block"; barC.style.width = Math.min(cPct,60)/60*100 + "%"; barC.textContent = cPct + "%"; }
     else rowC.style.display = "none";
-
     if (currentMode === "overunder") {
       document.getElementById("labelA").innerHTML = 'OVER <span>' + prediction + '</span>';
       document.getElementById("labelB").innerHTML = 'UNDER <span>' + prediction + '</span>';
       document.getElementById("labelC").innerHTML = 'SAME <span>' + prediction + '</span>';
     } else if (currentMode === "evenodd") {
-      document.getElementById("labelA").innerHTML = 'EVEN';
-      document.getElementById("labelB").innerHTML = 'ODD';
+      document.getElementById("labelA").innerHTML = 'EVEN'; document.getElementById("labelB").innerHTML = 'ODD';
     } else {
       document.getElementById("labelA").innerHTML = 'MATCHES <span>' + prediction + '</span>';
       document.getElementById("labelB").innerHTML = 'DIFFERS <span>' + prediction + '</span>';
     }
     renderCircles();
   }
-
-  // ---------------- DIGIT CIRCLES 0-9 ----------------
   function renderCircles() {
-    const container = document.getElementById("circlesGrid");
-    container.innerHTML = "";
-    const digits = sampleDigits.slice(-100);
-    const total = digits.length || 1;
+    const container = document.getElementById("circlesGrid"); container.innerHTML = "";
+    const digits = sampleDigits.slice(-100); const total = digits.length || 1;
     const counts = new Array(10).fill(0);
     digits.forEach(d => { if (d >= 0 && d <= 9) counts[d]++; });
     const pcts = counts.map(c => Math.round((c/total)*1000)/10);
-    const maxPct = Math.max(...pcts);
-    const minPct = Math.min(...pcts);
+    const maxPct = Math.max(...pcts); const minPct = Math.min(...pcts);
     const lastDigit = digits.length ? digits[digits.length-1] : null;
-
     for (let i = 0; i <= 9; i++) {
-      const cell = document.createElement("div");
-      cell.className = "circle-cell";
-      const arrow = document.createElement("div");
-      arrow.className = "circle-arrow";
+      const cell = document.createElement("div"); cell.className = "circle-cell";
+      const arrow = document.createElement("div"); arrow.className = "circle-arrow";
       arrow.textContent = (lastDigit === i) ? "▲" : "";
-      const circle = document.createElement("div");
-      circle.className = "circle";
-      if (pcts[i] === maxPct) circle.classList.add("highest");
-      else if (pcts[i] === minPct) circle.classList.add("lowest");
+      const circle = document.createElement("div"); circle.className = "circle";
+      if (pcts[i] === maxPct) circle.classList.add("highest"); else if (pcts[i] === minPct) circle.classList.add("lowest");
       circle.innerHTML = '<div class="digit">' + i + '</div><div class="pct">' + pcts[i].toFixed(1) + '%</div>';
-      cell.appendChild(circle);
-      cell.appendChild(arrow);
-      container.appendChild(cell);
+      cell.appendChild(circle); cell.appendChild(arrow); container.appendChild(cell);
     }
   }
-
   function updateTitles() {
-    const t = {
-      overunder: ["OVER UNDER LDP", "OVER UNDER PERCENTAGES"],
-      evenodd: ["EVEN ODD LDP", "EVEN ODD PERCENTAGES"],
-      matchesdiffers: ["MATCHES DIFFERS LDP", "MATCHES DIFFERS PERCENTAGES"]
-    };
+    const t = { overunder: ["OVER UNDER LDP", "OVER UNDER PERCENTAGES"], evenodd: ["EVEN ODD LDP", "EVEN ODD PERCENTAGES"], matchesdiffers: ["MATCHES DIFFERS LDP", "MATCHES DIFFERS PERCENTAGES"] };
     document.getElementById("ldpTitle").textContent = t[currentMode][0];
     document.getElementById("pctTitle").textContent = t[currentMode][1];
   }
-  function updatePredictionVisibility() {
-    document.getElementById("predictionRow").style.display = (currentMode === "evenodd") ? "none" : "flex";
-  }
+  function updatePredictionVisibility() { document.getElementById("predictionRow").style.display = (currentMode === "evenodd") ? "none" : "flex"; }
   function switchMode(mode) {
     currentMode = mode;
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
     updateTitles(); updatePredictionVisibility(); renderGrid(); renderBars();
   }
-  function onPredictionChange() {
-    prediction = parseInt(document.getElementById("predictionSelect").value, 10);
-    renderGrid(); renderBars();
-  }
-  function onSampleSizeChange() {
-    sampleSize = parseInt(document.getElementById("sampleSizeSelect").value, 10);
-    renderBars();
-  }
+  function onPredictionChange() { prediction = parseInt(document.getElementById("predictionSelect").value, 10); renderGrid(); renderBars(); }
+  function onSampleSizeChange() { sampleSize = parseInt(document.getElementById("sampleSizeSelect").value, 10); renderBars(); }
   function updatePrice(p) { const el = document.getElementById("priceValue"); if (el) el.textContent = p; }
-  function onSymbolChange() {
-    const sel = document.getElementById("symbolSelect");
-    currentSymbol = sel.value;
-    subscribeToTicks(currentSymbol);
-  }
+  function onSymbolChange() { currentSymbol = document.getElementById("symbolSelect").value; subscribeToTicks(currentSymbol); }
 
   updateTitles(); updatePredictionVisibility(); renderGrid(); renderBars();
 
-  // ---------------- REAL DERIV WEBSOCKET (2026 public API) ----------------
+  // ---------------- REAL DERIV WEBSOCKET ----------------
   const DERIV_PUBLIC_WS = "wss://api.derivws.com/trading/v1/options/ws/public";
   const DERIV_REST_BASE = "https://api.derivws.com/trading/v1/options";
   const DERIV_APP_ID_HEADER = "34dOXKmoe0wMGmp2uin91";
-  let derivSocket = null;
-  let currentSymbol = "R_50";
-  let wsReconnectTimer = null;
-  let staleWatchdog = null;
-  let pingInterval = null;
+  let derivSocket = null, currentSymbol = "R_50", wsReconnectTimer = null, staleWatchdog = null, pingInterval = null;
   const STALE_TIMEOUT_MS = 10000;
-  let latestRealPrice = null;
-  let latestRealDigit = null;
+  let latestRealPrice = null, latestRealDigit = null, basePrice = 98.4207;
 
-  function setWsStatus(text, color) {
-    const el = document.getElementById("wsStatus");
-    if (el) { el.textContent = text; el.style.color = color || "var(--muted)"; }
-  }
-  function armStaleWatchdog() {
-    clearTimeout(staleWatchdog);
-    staleWatchdog = setTimeout(() => {
-      setWsStatus("⚠️ Feed went quiet — reconnecting…", "#e8544f");
-      forceReconnect();
-    }, STALE_TIMEOUT_MS);
-  }
-  function forceReconnect() {
-    clearInterval(pingInterval); clearTimeout(staleWatchdog);
-    if (derivSocket) { try { derivSocket.onclose = null; derivSocket.close(); } catch (e) {} }
-    connectDerivSocket();
-  }
+  function setWsStatus(text, color) { const el = document.getElementById("wsStatus"); if (el) { el.textContent = text; el.style.color = color || "var(--muted)"; } }
+  function armStaleWatchdog() { clearTimeout(staleWatchdog); staleWatchdog = setTimeout(() => { setWsStatus("⚠️ Feed went quiet — reconnecting…", "#e8544f"); forceReconnect(); }, STALE_TIMEOUT_MS); }
+  function forceReconnect() { clearInterval(pingInterval); clearTimeout(staleWatchdog); if (derivSocket) { try { derivSocket.onclose = null; derivSocket.close(); } catch (e) {} } connectDerivSocket(); }
   function connectDerivSocket() {
     setWsStatus("🔌 Connecting to Deriv…", "#9aa0aa");
-    try {
-      derivSocket = new WebSocket(DERIV_PUBLIC_WS);
-    } catch (e) {
-      setWsStatus("⚠️ Could not open socket — retrying…", "#e8544f");
-      wsReconnectTimer = setTimeout(connectDerivSocket, 3000);
-      return;
-    }
+    try { derivSocket = new WebSocket(DERIV_PUBLIC_WS); }
+    catch (e) { setWsStatus("⚠️ Could not open socket — retrying…", "#e8544f"); wsReconnectTimer = setTimeout(connectDerivSocket, 3000); return; }
     derivSocket.onopen = () => {
       setWsStatus("✅ Socket open — requesting ticks…", "#2ecc71");
-      subscribeToTicks(currentSymbol);
-      armStaleWatchdog();
+      subscribeToTicks(currentSymbol); armStaleWatchdog();
       clearInterval(pingInterval);
-      pingInterval = setInterval(() => {
-        if (derivSocket && derivSocket.readyState === WebSocket.OPEN) derivSocket.send(JSON.stringify({ ping: 1 }));
-      }, 20000);
+      pingInterval = setInterval(() => { if (derivSocket && derivSocket.readyState === WebSocket.OPEN) derivSocket.send(JSON.stringify({ ping: 1 })); }, 20000);
     };
     derivSocket.onmessage = (event) => {
-      let data;
-      try { data = JSON.parse(event.data); } catch (e) { return; }
+      let data; try { data = JSON.parse(event.data); } catch (e) { return; }
       if (data.msg_type === "tick" && data.tick) {
         armStaleWatchdog();
-        const quote = data.tick.quote;
-        const lastDigit = parseInt(quote.toString().slice(-1), 10);
+        const quote = data.tick.quote; const lastDigit = parseInt(quote.toString().slice(-1), 10);
         setWsStatus("✅ Live — connected to Deriv", "#2ecc71");
         updatePrice(quote.toFixed(4));
-        latestRealPrice = quote;
-        latestRealDigit = isNaN(lastDigit) ? 0 : lastDigit;
-        sampleDigits.push(latestRealDigit);
-        if (sampleDigits.length > 500) sampleDigits.shift();
+        latestRealPrice = quote; latestRealDigit = isNaN(lastDigit) ? 0 : lastDigit;
+        sampleDigits.push(latestRealDigit); if (sampleDigits.length > 500) sampleDigits.shift();
         renderGrid(); renderBars();
       }
       if (data.error) setWsStatus("⚠️ " + (data.error.message || "API error"), "#e8544f");
@@ -688,109 +573,84 @@ try {
   }
   connectDerivSocket();
 
-  // ---------------- AUTHENTICATED BALANCE (OTP flow) ----------------
-  let authSockets = { demo: null, real: null }; // one live authenticated socket per account
-  let authStatus = { demo: "idle", real: "idle" }; // idle | connecting | connected | failed
+  // ---------------- AUTHENTICATED ACCOUNTS (OTP flow) ----------------
+  let authSockets = { demo: null, real: null };
+  let demoBalance = 10000.00, realBalance = 0.00;
 
-  function setAcctStatus(type, status, detail) {
-    authStatus[type] = status;
-    const el = document.getElementById(type === "demo" ? "ddDemoStatus" : "ddRealStatus");
-    if (!el) return;
-    const labels = {
-      idle: "not connected",
-      connecting: "connecting…",
-      connected: "✅ connected",
-      failed: "⚠️ " + (detail || "connection failed")
-    };
-    el.textContent = labels[status] || status;
-    el.style.color = status === "connected" ? "#2ecc71" : status === "failed" ? "#e8544f" : "var(--muted)";
-  }
   async function connectAuthenticatedAccount(accountType) {
     const token = localStorage.getItem("deriv_access_token");
     if (!token) { setAcctStatus(accountType, "failed", "not logged in"); return; }
     setAcctStatus(accountType, "connecting");
     try {
-      const accountsRes = await fetch(DERIV_REST_BASE + "/accounts", {
-        headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
-      });
-      if (accountsRes.status === 401) {
-        setAcctStatus(accountType, "failed", "session expired — please log in again");
-        localStorage.removeItem("deriv_access_token");
-        return;
-      }
+      const accountsRes = await fetch(DERIV_REST_BASE + "/accounts", { headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER } });
+      if (accountsRes.status === 401) { setAcctStatus(accountType, "failed", "session expired — please log in again"); localStorage.removeItem("deriv_access_token"); refreshLoginButtonVisibility(); return; }
       if (!accountsRes.ok) { setAcctStatus(accountType, "failed", "accounts fetch " + accountsRes.status); return; }
       const accountsData = await accountsRes.json();
-      const debugPanel = document.getElementById("debugPanel");
-      const debugContent = document.getElementById("debugContent");
-      if (debugPanel && debugContent) {
-        debugPanel.style.display = "block";
-        debugContent.textContent = "GET /accounts -> status " + accountsRes.status + "\n\n" + JSON.stringify(accountsData, null, 2);
-      }
+      const debugPanel = document.getElementById("debugPanel"), debugContent = document.getElementById("debugContent");
+      if (debugPanel && debugContent) { debugPanel.style.display = "block"; debugContent.textContent = "GET /accounts -> status " + accountsRes.status + "\\n\\n" + JSON.stringify(accountsData, null, 2); }
       const accounts = accountsData.data || accountsData;
       if (!accounts || !accounts.length) { setAcctStatus(accountType, "failed", "no accounts returned"); return; }
       const match = accounts.find(a => a.account_type === accountType);
-      if (!match) {
-        const targetId = accountType === "demo" ? "ddDemoBal" : "ddRealBal";
-        document.getElementById(targetId).textContent = "—";
-        setAcctStatus(accountType, "failed", "no " + accountType + " account on this login");
-        return;
-      }
-      const otpRes = await fetch(DERIV_REST_BASE + "/accounts/" + match.account_id + "/otp", {
-        method: "POST", headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER }
-      });
+      if (!match) { document.getElementById(accountType === "demo" ? "ddDemoBal" : "ddRealBal").textContent = "—"; setAcctStatus(accountType, "failed", "no " + accountType + " account on this login"); return; }
+
+      const otpRes = await fetch(DERIV_REST_BASE + "/accounts/" + match.account_id + "/otp", { method: "POST", headers: { "Authorization": "Bearer " + token, "Deriv-App-ID": DERIV_APP_ID_HEADER } });
       if (!otpRes.ok) { setAcctStatus(accountType, "failed", "otp request " + otpRes.status); return; }
       const otpData = await otpRes.json();
-      const debugContent2 = document.getElementById("debugContent");
-      if (debugContent2) {
-        debugContent2.textContent += "\n\nPOST /accounts/" + match.account_id + "/otp -> status " + otpRes.status + "\n\n" + JSON.stringify(otpData, null, 2);
-      }
+      if (debugContent) debugContent.textContent += "\\n\\nPOST /accounts/" + match.account_id + "/otp -> status " + otpRes.status + "\\n\\n" + JSON.stringify(otpData, null, 2);
       const wsUrl = otpData.data && otpData.data.url;
       if (!wsUrl) { setAcctStatus(accountType, "failed", "no otp url in response"); return; }
-      if (authSocket) { try { authSocket.close(); } catch (e) {} }
-      authSocket = new WebSocket(wsUrl);
-      authSocket.onopen = () => authSocket.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-      authSocket.onmessage = (event) => {
+
+      if (authSockets[accountType]) { try { authSockets[accountType].close(); } catch (e) {} }
+      const sock = new WebSocket(wsUrl);
+      authSockets[accountType] = sock;
+
+      sock.onopen = () => { setAcctStatus(accountType, "connected"); sock.send(JSON.stringify({ balance: 1, subscribe: 1 })); };
+      sock.onclose = () => { if (authStatus[accountType] !== "failed") setAcctStatus(accountType, "idle"); };
+      sock.onerror = () => setAcctStatus(accountType, "failed", "socket error");
+      sock.onmessage = (event) => {
         let data; try { data = JSON.parse(event.data); } catch (e) { return; }
         if (data.msg_type === "balance" && data.balance) {
-          const rawBal = data.balance.balance;
-          const bal = rawBal.toFixed(2) + " " + data.balance.currency;
+          const rawBal = data.balance.balance; const bal = rawBal.toFixed(2) + " " + data.balance.currency;
           if (accountType === "demo") demoBalance = rawBal; else realBalance = rawBal;
-          const targetId = accountType === "demo" ? "ddDemoBal" : "ddRealBal";
-          document.getElementById(targetId).textContent = bal;
-          if (activeAccountType === accountType) {
-            document.getElementById("acctBtnBalance").textContent = bal;
-            document.getElementById("runBalance").textContent = bal;
-          }
+          document.getElementById(accountType === "demo" ? "ddDemoBal" : "ddRealBal").textContent = bal;
+          if (activeAccountType === accountType) { document.getElementById("acctBtnBalance").textContent = bal; document.getElementById("runBalance").textContent = bal; }
         }
+        if (data.msg_type === "proposal" && data.proposal) handleProposalResponse(accountType, data.proposal);
+        if (data.msg_type === "buy" && data.buy) handleBuyResponse(accountType, data.buy);
+        if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) handleContractUpdate(data.proposal_open_contract);
+        if (data.error) { const fb = document.getElementById("tradeFeedback"); if (fb) { fb.textContent = "⚠️ " + data.error.message; fb.style.color = "#e8544f"; } }
       };
     } catch (e) {
       console.warn("Auth account error:", e);
       setAcctStatus(accountType, "failed", e.message || "network error");
     }
   }
-  if (localStorage.getItem("deriv_access_token")) {
-    connectAuthenticatedAccount("demo");
-    connectAuthenticatedAccount("real");
-  }
 
-  // ---------------- MANUAL TRADE OVERLAY ----------------
+  if (localStorage.getItem("deriv_access_token")) { connectAuthenticatedAccount("demo"); connectAuthenticatedAccount("real"); }
+
+  // ---------------- MANUAL TRADE (real proposal + buy) ----------------
   function openTradeSheet() { document.getElementById("tradeOverlay").classList.add("open"); }
   function closeTradeSheet() { document.getElementById("tradeOverlay").classList.remove("open"); }
-  let pendingTradeRow = null; // trade row awaiting a real outcome from Deriv
+
+  function contractTypeFor(mode, direction) {
+    if (mode === "overunder") return direction === "over" ? "DIGITOVER" : "DIGITUNDER";
+    if (mode === "evenodd") return direction === "over" ? "DIGITEVEN" : "DIGITODD";
+    return direction === "over" ? "DIGITMATCH" : "DIGITDIFF";
+  }
+
+  let pendingManualRequest = null, pendingTradeRow = null;
 
   async function placeManualTrade(direction) {
     const fb = document.getElementById("tradeFeedback");
     let sock = authSockets[activeAccountType];
 
     if (!sock || sock.readyState !== WebSocket.OPEN) {
-      fb.textContent = "Reconnecting to " + activeAccountType + " account…";
-      fb.style.color = "";
+      fb.textContent = "Reconnecting to " + activeAccountType + " account…"; fb.style.color = "";
       await connectAuthenticatedAccount(activeAccountType);
       sock = authSockets[activeAccountType];
       if (!sock || sock.readyState !== WebSocket.OPEN) {
-        fb.textContent = "⚠️ Could not authenticate " + activeAccountType + " account. Check status in the account menu (top right).";
-        fb.style.color = "#e8544f";
-        return;
+        fb.textContent = "⚠️ Could not authenticate " + activeAccountType + " account. Check status in the account menu.";
+        fb.style.color = "#e8544f"; return;
       }
     }
 
@@ -798,34 +658,15 @@ try {
     const duration = parseInt(document.getElementById("manualDuration").value, 10) || 5;
     const currentBal = activeAccountType === "demo" ? demoBalance : realBalance;
 
-    if (stake > currentBal) {
-      fb.textContent = "⚠️ Insufficient balance. " + activeAccountType + " balance: " + fmt(currentBal) + " USD";
-      fb.style.color = "#e8544f";
-      return;
-    }
+    if (stake > currentBal) { fb.textContent = "⚠️ Insufficient balance. " + activeAccountType + " balance: " + fmt(currentBal) + " USD"; fb.style.color = "#e8544f"; return; }
 
-    fb.style.color = "";
-    fb.textContent = "Requesting price…";
-
+    fb.style.color = ""; fb.textContent = "Requesting price…";
     const contractType = contractTypeFor(currentMode, direction);
-    const req = {
-      proposal: 1,
-      amount: stake,
-      basis: "stake",
-      contract_type: contractType,
-      currency: "USD",
-      duration: duration,
-      duration_unit: "t",
-      symbol: currentSymbol
-    };
-    if (contractType === "DIGITOVER" || contractType === "DIGITUNDER" || contractType === "DIGITMATCH" || contractType === "DIGITDIFF") {
-      req.barrier = prediction;
-    }
+    const req = { proposal: 1, amount: stake, basis: "stake", contract_type: contractType, currency: "USD", duration: duration, duration_unit: "t", symbol: currentSymbol };
+    if (["DIGITOVER","DIGITUNDER","DIGITMATCH","DIGITDIFF"].includes(contractType)) req.barrier = prediction;
     pendingManualRequest = { accountType: activeAccountType, direction, stake };
     sock.send(JSON.stringify(req));
   }
-
-  let pendingManualRequest = null;
 
   function handleProposalResponse(accountType, proposal) {
     if (!pendingManualRequest || pendingManualRequest.accountType !== accountType) return;
@@ -837,22 +678,10 @@ try {
 
   function handleBuyResponse(accountType, buy) {
     const fb = document.getElementById("tradeFeedback");
-    if (buy.error) {
-      fb.textContent = "⚠️ " + buy.error.message;
-      fb.style.color = "#e8544f";
-      pendingManualRequest = null;
-      return;
-    }
+    if (buy.error) { fb.textContent = "⚠️ " + buy.error.message; fb.style.color = "#e8544f"; pendingManualRequest = null; return; }
     fb.textContent = "Contract bought — waiting for result…";
     const entry = latestRealPrice !== null ? latestRealPrice : basePrice;
-
-    pendingTradeRow = {
-      contractId: buy.contract_id,
-      entrySpot: entry,
-      stake: pendingManualRequest ? pendingManualRequest.stake : parseFloat(buy.buy_price),
-      accountType: accountType
-    };
-
+    pendingTradeRow = { contractId: buy.contract_id, entrySpot: entry, stake: pendingManualRequest ? pendingManualRequest.stake : parseFloat(buy.buy_price), accountType: accountType };
     const sock = authSockets[accountType];
     sock.send(JSON.stringify({ proposal_open_contract: 1, contract_id: buy.contract_id, subscribe: 1 }));
     pendingManualRequest = null;
@@ -860,58 +689,35 @@ try {
 
   function handleContractUpdate(contract) {
     if (!pendingTradeRow || contract.contract_id !== pendingTradeRow.contractId) return;
-    if (!contract.is_sold) return; // still running — wait for the final update
-
+    if (!contract.is_sold) return;
     const fb = document.getElementById("tradeFeedback");
     const won = parseFloat(contract.profit) > 0;
     const exitSpot = parseFloat(contract.exit_tick) || pendingTradeRow.entrySpot;
     const stake = pendingTradeRow.stake;
-
-    totalStake += stake;
-    totalPayout += won ? parseFloat(contract.payout) : 0;
-    runsCount += 1;
+    totalStake += stake; totalPayout += won ? parseFloat(contract.payout) : 0; runsCount += 1;
     if (won) contractsWon++; else contractsLost++;
-
     pushTradeRow(pendingTradeRow.entrySpot, exitSpot, stake, won);
     updateStats();
-    // Balance updates automatically via the live "balance" subscription on this socket.
-
     fb.textContent = won ? "✅ Won! Exit " + exitSpot.toFixed(4) : "❌ Lost. Exit " + exitSpot.toFixed(4);
     fb.style.color = "";
     pendingTradeRow = null;
   }
 
-  // Reflects the correct per-account balance — never mixes Real and Demo numbers
-  function updateAccountBalanceDisplay() {
-    const bal = activeAccountType === "demo" ? demoBalance : realBalance;
-    const balStr = fmt(bal) + " USD";
-    const targetId = activeAccountType === "demo" ? "ddDemoBal" : "ddRealBal";
-    document.getElementById(targetId).textContent = balStr;
-    document.getElementById("acctBtnBalance").textContent = balStr;
-    document.getElementById("runBalance").textContent = balStr;
-  }
+  document.addEventListener("input", function(e) {
+    if (e.target && e.target.id === "manualStake") {
+      const s = parseFloat(e.target.value) || 0;
+      const p = (s * 1.9).toFixed(2);
+      const a = document.getElementById("payoutOverPreview"), b = document.getElementById("payoutUnderPreview");
+      if (a) a.textContent = p + " USD"; if (b) b.textContent = p + " USD";
+    }
+  });
 
-  // ---------------- RUN / HISTORY SIMULATION (now uses REAL data) ----------------
-  let running = false;
-  let hasStartedOnce = false;
-  let historyVisible = false;
-  let runTimer = null;
-  let progressTimer = null;
-  let basePrice = 98.4207;
-  let demoBalance = 10000.00;
-  let realBalance = 0.00; // populated from Deriv's real balance once fetched
+  // ---------------- RUN / HISTORY (auto-bot, still local-simulated) ----------------
+  let running = false, historyVisible = false, runTimer = null, progressTimer = null;
   let totalStake = 0, totalPayout = 0, runsCount = 0, contractsLost = 0, contractsWon = 0;
-  const STAKE = 0.35;
-  const PAYOUT_RATIO = 1.9;
-
+  const STAKE = 0.35, PAYOUT_RATIO = 1.9;
   function fmt(n) { return n.toFixed(2); }
   function randomDigit() { return Math.floor(Math.random() * 10); }
-
-  function contractTypeFor(mode, direction) {
-    if (mode === "overunder") return direction === "over" ? "DIGITOVER" : "DIGITUNDER";
-    if (mode === "evenodd") return direction === "over" ? "DIGITEVEN" : "DIGITODD"; // "over" slot = Even, "under" slot = Odd
-    return direction === "over" ? "DIGITMATCH" : "DIGITDIFF"; // "over" slot = Matches, "under" slot = Differs
-  }
   function evaluateWin(digit) {
     if (currentMode === "overunder") return digit > prediction;
     if (currentMode === "evenodd") return digit % 2 === 0;
@@ -919,36 +725,19 @@ try {
   }
   function pushTradeRow(entrySpot, exitSpot, stake, won) {
     const rowsEl = document.getElementById("tradeRows");
-    const row = document.createElement("div");
-    row.className = "trade-row";
+    const row = document.createElement("div"); row.className = "trade-row";
     const pl = won ? (stake * (PAYOUT_RATIO - 1)) : -stake;
-    row.innerHTML = `
-      <div class="col-type">📊</div>
-      <div class="col-spot">
-        <div class="spot-line"><span class="spot-dot filled"></span>${entrySpot.toFixed(4)}</div>
-        <div class="spot-line"><span class="spot-dot exit"></span>${exitSpot.toFixed(4)}</div>
-      </div>
-      <div class="col-pl">
-        <div class="pl-buy">${fmt(stake)} USD</div>
-        <div class="${won ? 'pl-win' : 'pl-loss'}">${won ? '+' : ''}${fmt(pl)} USD</div>
-      </div>`;
+    row.innerHTML = `<div class="col-type">📊</div><div class="col-spot"><div class="spot-line"><span class="spot-dot filled"></span>${entrySpot.toFixed(4)}</div><div class="spot-line"><span class="spot-dot exit"></span>${exitSpot.toFixed(4)}</div></div><div class="col-pl"><div class="pl-buy">${fmt(stake)} USD</div><div class="${won ? 'pl-win' : 'pl-loss'}">${won ? '+' : ''}${fmt(pl)} USD</div></div>`;
     rowsEl.insertBefore(row, rowsEl.firstChild);
   }
   function runOneContract() {
     if (!running) return;
-    if (activeAccountType === "real") {
-      document.getElementById("statusText").textContent = "Real trading not connected — switch to Demo";
-      toggleBot(); // auto-stop
-      return;
-    }
     const statusEls = [document.getElementById("runStatusText"), document.getElementById("statusText")];
     const progressEl = document.getElementById("runProgress");
     statusEls.forEach(el => el.textContent = "Contract bought");
     progressEl.style.width = "0%";
-    let pct = 0;
-    clearInterval(progressTimer);
+    let pct = 0; clearInterval(progressTimer);
     progressTimer = setInterval(() => { pct += 20; progressEl.style.width = Math.min(pct,100) + "%"; }, 200);
-
     const entrySpot = latestRealPrice !== null ? latestRealPrice : basePrice;
     setTimeout(() => {
       if (!running) { clearInterval(progressTimer); return; }
@@ -958,12 +747,10 @@ try {
       const won = evaluateWin(digit);
       const payout = won ? STAKE * PAYOUT_RATIO : 0;
       totalStake += STAKE; totalPayout += payout; runsCount += 1;
-      if (won) { contractsWon++; demoBalance += (payout - STAKE); } else { contractsLost++; demoBalance -= STAKE; }
+      if (won) contractsWon++; else contractsLost++;
       pushTradeRow(entrySpot, exitSpot, STAKE, won);
       updateStats();
-      updateAccountBalanceDisplay();
-      const outcomeText = won ? "Won" : "Lost";
-      statusEls.forEach(el => el.textContent = outcomeText);
+      statusEls.forEach(el => el.textContent = won ? "Won" : "Lost");
       progressEl.style.width = "100%";
       if (running) runTimer = setTimeout(runOneContract, 1200);
     }, 1000);
@@ -981,8 +768,7 @@ try {
   }
   function toggleBot() {
     if (running) {
-      running = false;
-      clearTimeout(runTimer); clearInterval(progressTimer);
+      running = false; clearTimeout(runTimer); clearInterval(progressTimer);
       document.getElementById("runProgress").style.width = "0%";
       document.getElementById("runStatusText").textContent = "Bot is not running";
       document.getElementById("statusText").textContent = "Bot is not running";
@@ -999,15 +785,9 @@ try {
     }
   }
   function setToggleLabel(isRunning) {
-    const mainBtn = document.getElementById("runBtn");
-    const pageBtn = document.getElementById("runPageToggleBtn");
-    if (isRunning) {
-      mainBtn.textContent = "Stop"; mainBtn.classList.add("stopping");
-      pageBtn.textContent = "Stop"; pageBtn.classList.remove("is-run");
-    } else {
-      mainBtn.textContent = "▶ Run"; mainBtn.classList.remove("stopping");
-      pageBtn.textContent = "Run"; pageBtn.classList.add("is-run");
-    }
+    const mainBtn = document.getElementById("runBtn"), pageBtn = document.getElementById("runPageToggleBtn");
+    if (isRunning) { mainBtn.textContent = "Stop"; mainBtn.classList.add("stopping"); pageBtn.textContent = "Stop"; pageBtn.classList.remove("is-run"); }
+    else { mainBtn.textContent = "▶ Run"; mainBtn.classList.remove("stopping"); pageBtn.textContent = "Run"; pageBtn.classList.add("is-run"); }
   }
   function resetHistory() {
     if (running) return;
@@ -1022,20 +802,10 @@ try {
     document.getElementById("journalView").style.display = tab === "journal" ? "block" : "none";
     document.getElementById("tableHead").style.display = tab === "transactions" ? "flex" : "none";
   }
-  function showHistoryView() {
-    historyVisible = true;
-    document.getElementById("runPage").style.display = "flex";
-    document.getElementById("mainRunbar").style.display = "none";
-  }
-  function hideHistoryView() {
-    historyVisible = false;
-    document.getElementById("runPage").style.display = "none";
-    document.getElementById("mainRunbar").style.display = "block";
-    document.getElementById("showHistoryBtn").style.display = "flex";
-  }
+  function showHistoryView() { historyVisible = true; document.getElementById("runPage").style.display = "flex"; document.getElementById("mainRunbar").style.display = "none"; }
+  function hideHistoryView() { historyVisible = false; document.getElementById("runPage").style.display = "none"; document.getElementById("mainRunbar").style.display = "block"; }
 
-  updateStats();
-  renderCircles();
+  updateStats(); renderCircles();
 
 } catch (err) {
   console.error("Jupiter FX runtime error:", err);
